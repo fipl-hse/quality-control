@@ -1009,6 +1009,7 @@ look
 looking
 loop
 lose
+losers
 love
 loved
 low-level
@@ -1266,6 +1267,7 @@ pat
 path
 pathlib
 paths
+pathstokeep
 pattern
 patterns
 patternsearcher

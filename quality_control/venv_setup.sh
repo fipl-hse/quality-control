@@ -1,5 +1,4 @@
 set -ex
-source config/common.sh
 
 which python
 
@@ -7,8 +6,8 @@ python -m pip install --upgrade pip
 python -m pip install virtualenv
 python -m virtualenv venv
 
-configure_script
-
+source venv/bin/activate
+export PYTHONPATH=$(pwd):$PYTHONPATH
 which python
 
 python -m pip install -r requirements.txt

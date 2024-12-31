@@ -122,7 +122,7 @@ def parse_arguments() -> argparse.Namespace:
         argparse.Namespace: Parsed arguments.
     """
     parser = argparse.ArgumentParser(description="Run check_lint.py checks for each lab.")
-    parser.add_argument("--repository_type", help="Type of the repository (public/private)")
+    parser.add_argument("--repository_type", help="Type of the repository (public/admin)")
     return parser.parse_args()
 
 

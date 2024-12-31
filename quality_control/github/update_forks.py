@@ -122,16 +122,16 @@ def main(configuration_path: Path) -> None:
         paths_to_keep=winners["pathsToKeep"],
     )
 
-    loosers = configuration["losers"]
+    losers = configuration["losers"]
     update_forks(
         python=python_exe_path,
         authentication=authentication,
         strategy="loser",
         repositories={
             "upstream": upstream,
-            "forks": loosers["forks"],
+            "forks": losers["forks"],
         },
-        paths_to_keep=loosers["pathsToKeep"],
+        paths_to_keep=losers["pathsToKeep"],
     )
 
 

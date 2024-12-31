@@ -3,6 +3,8 @@ Root logger configuration etc.
 """
 
 from logging import getLogger, Logger
+from os.path import sep
+from pathlib import Path
 
 from logging518.config import fileConfig
 
@@ -32,5 +34,7 @@ def get_child_logger(file_path: str) -> Logger:
         Logger: Instance of child logger
     """
     root_logger = get_root_logger()
-    suffix = file_path.split(str(PROJECT_ROOT))[1]
-    return root_logger.getChild(suffix)
+    child_suffix = file_path
+    if Path(file_path).is_relative_to(PROJECT_ROOT):
+        child_suffix = str(Path(file_path).relative_to(PROJECT_ROOT))
+    return root_logger.getChild(f"{sep}{child_suffix}")

@@ -59,7 +59,7 @@ def remove_implementation_from_function(
     original_declaration.body[1:] = opening_files
 
 
-# pylint: disable=too-many-branches
+# pylint: disable=too-many-branches,too-many-statements,too-many-locals
 def cleanup_code(source_code_path: Path) -> str:
     """
     Remove implementation based on AST parsing of code.
@@ -102,9 +102,14 @@ def cleanup_code(source_code_path: Path) -> str:
 
     new_decl: list[stmt] = []
 
-    for decl_2 in data_2.body:
+    for decl_index, decl_2 in enumerate(data_2.body):
         if isinstance(decl_2, ast_comments.Comment):
-            data.body.insert(data_2.body.index(decl_2), decl_2)
+            data.body.insert(decl_index, decl_2)
+
+        if isinstance(decl_2, ast.ClassDef):
+            for class_index, class_decl in enumerate(decl_2.body):
+                if isinstance(class_decl, ast_comments.Comment) and "#: " in class_decl.value:
+                    data.body[decl_index].body.insert(class_index, class_decl)
 
     for decl in data.body:
         if (
