@@ -134,27 +134,18 @@ def main() -> None:
     repository_type = args.repository_type
     project_config = ProjectConfig(PROJECT_CONFIG_PATH)
     labs_list = project_config.get_labs_paths()
+    addons = project_config.get_addons_names()
 
     pyproject_path = PROJECT_ROOT / "pyproject.toml"
 
     check_is_failed = False
 
-    logger.info("Running lint on config, seminars, admin_utils")
-    stdout, _, _ = check_lint_on_paths(
-        [PROJECT_ROOT / "config", PROJECT_ROOT / "seminars", PROJECT_ROOT / "admin_utils"],
-        pyproject_path,
-        exit_zero=True,
-    )
-    if not check_lint_level(stdout, 10):
-        check_is_failed = True
-
-    if (PROJECT_ROOT / "core_utils").exists():
-        logger.info("core_utils exist")
-        logger.info("Running lint on core_utils")
+    if addons:
         stdout, _, _ = check_lint_on_paths(
-            [PROJECT_ROOT / "core_utils"], pyproject_path, exit_zero=True
+            [PROJECT_ROOT / addon for addon in addons], pyproject_path, exit_zero=True
         )
         if not check_lint_level(stdout, 10):
+            logger.info(f"Running lint on {' '.join(addons)}")
             check_is_failed = True
 
     for lab_name in labs_list:

@@ -41,7 +41,7 @@ def main() -> None:
     Run doc8 checks for the project.
     """
     project_config = ProjectConfig(PROJECT_CONFIG_PATH)
-    labs_list = project_config.get_labs_paths()
+    labs_list = project_config.get_labs_paths(include_addons=False)
 
     pyproject_path = PROJECT_ROOT / "pyproject.toml"
 
