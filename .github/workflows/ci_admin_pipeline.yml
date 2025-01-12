@@ -26,7 +26,7 @@ jobs:
         uses: fipl-hse/setup-env-action@v0.11
       - name: Configrming everything is OK
         run: |
-          ls -la ven
+          ls -la venv
 
   spellcheck:
     name: Spellcheck
