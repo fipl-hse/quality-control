@@ -37,11 +37,10 @@ def main() -> None:
     """
     project_config = ProjectConfig(PROJECT_CONFIG_PATH)
     labs_list = project_config.get_labs_paths()
+    addons = project_config.get_addons_names()
 
-    logger.info("Running flake8 on config, seminars, admin_utils")
-    check_flake8_on_paths(
-        [PROJECT_ROOT / "config", PROJECT_ROOT / "seminars", PROJECT_ROOT / "admin_utils"]
-    )
+    logger.info(f"Running flake8 on {' '.join(addons)}")
+    check_flake8_on_paths([PROJECT_ROOT / addon for addon in addons])
 
     if (PROJECT_ROOT / "core_utils").exists():
         logger.info("core_utils exist")

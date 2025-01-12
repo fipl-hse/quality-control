@@ -20,15 +20,15 @@ fi
 
 export PYTHONPATH=$(pwd)
 
-python -m pylint "${DIRS_TO_CHECK[@]}"
+python -m black "${DIRS_TO_CHECK[@]}"
 
-python -m black --check "${DIRS_TO_CHECK[@]}"
+python -m pylint "${DIRS_TO_CHECK[@]}"
 
 mypy "${DIRS_TO_CHECK[@]}"
 
-python -m flake8 "${DIRS_TO_CHECK[@]}"
+python config/static_checks/check_docstrings.py
 
-python -m pytest -m "mark10 and lab_4_retrieval_w_clustering"
+python -m flake8 "${DIRS_TO_CHECK[@]}"
 
 if [[ "$1" != "smoke" ]]; then
   python -m pytest -m "mark10 and lab_1_classify_by_unigrams"

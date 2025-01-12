@@ -40,10 +40,7 @@ def collect_coverage(all_labs_names: Iterable[Path], artifacts_path: Path) -> Co
     for lab_path in all_labs_names:
         percentage = None
         try:
-            if lab_path.name == "core_utils":
-                check_target = False
-            else:
-                check_target = True
+            check_target = True
             run_coverage_collection(
                 lab_path=lab_path, artifacts_path=artifacts_path, check_target_score=check_target
             )
@@ -99,15 +96,14 @@ def main() -> None:
     project_config = ProjectConfig(PROJECT_CONFIG_PATH)
     coverage_thresholds = project_config.get_thresholds()
 
-    all_labs_names = project_config.get_labs_paths(include_addons=True)
+    all_labs_names = project_config.get_labs_paths(include_addons=False)
 
     not_skipped = []
     for lab_path in all_labs_names:
-        if "core_utils" not in lab_path.name:
-            settings = LabSettings(lab_path / "settings.json")
-            if settings.target_score == 0:
-                logger.info(f"Skip {lab_path} as target score is 0")
-                continue
+        settings = LabSettings(lab_path / "settings.json")
+        if settings.target_score == 0:
+            logger.info(f"Skip {lab_path} as target score is 0")
+            continue
         not_skipped.append(lab_path)
 
     all_labs_results = collect_coverage(not_skipped, artifacts_path)
