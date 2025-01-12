@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup FIPL environment
         uses: fipl-hse/setup-env-action@v0.11
-      - name: Confirming everything is OK
+      - name: Configrming everything is OK
         run: |
           ls -la ven
 
