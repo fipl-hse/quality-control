@@ -3,13 +3,13 @@ set -ex
 echo $1
 if [[ "$1" == "smoke" ]]; then
   DIRS_TO_CHECK=(
-    "config"
+    "quality_control"
     "seminars"
     "lab_4_retrieval_w_clustering"
   )
 else
   DIRS_TO_CHECK=(
-    "config"
+    "quality_control"
     "seminars"
     "lab_1_classify_by_unigrams"
     "lab_2_retrieval_w_bm25"

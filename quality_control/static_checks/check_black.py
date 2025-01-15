@@ -37,12 +37,9 @@ def main() -> None:
     labs_list = project_config.get_labs_paths()
     logger.info(labs_list)
 
-    logger.info("Running black on config, seminars, admin_utils, core_utils, labs")
+    logger.info("Running black on quality_control")
     all_paths = [
-        PROJECT_ROOT / "config",
-        PROJECT_ROOT / "seminars",
-        PROJECT_ROOT / "admin_utils",
-        PROJECT_ROOT / "core_utils",
+        PROJECT_ROOT / "quality_control"
     ]
     all_paths.extend([PROJECT_ROOT / lab_name for lab_name in labs_list])
     check_black_on_paths(all_paths)

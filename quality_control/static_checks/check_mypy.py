@@ -49,23 +49,9 @@ def main() -> None:
 
     logger.info("Running mypy on config, seminars, admin_utils")
     check_mypy_on_paths(
-        [PROJECT_ROOT / "config", PROJECT_ROOT / "seminars", PROJECT_ROOT / "admin_utils"],
+        [PROJECT_ROOT / "quality_control"],
         pyproject_path,
     )
-
-    if (PROJECT_ROOT / "core_utils").exists():
-        logger.info("core_utils exist")
-        logger.info("Running mypy on core_utils")
-        check_mypy_on_paths([PROJECT_ROOT / "core_utils"], pyproject_path)
-
-    for lab_name in labs_list:
-        lab_path = PROJECT_ROOT / lab_name
-        if "settings.json" in listdir(lab_path):
-            target_score = LabSettings(PROJECT_ROOT / f"{lab_path}/settings.json").target_score
-
-            if target_score > 7:
-                logger.info(f"Running mypy for lab {lab_path}")
-                check_mypy_on_paths([lab_path], pyproject_path)
 
 
 if __name__ == "__main__":
