@@ -5,8 +5,7 @@ A module for eliminating old workflows.
 from datetime import datetime
 
 from ghapi.all import GhApi
-
-from config.console_logging import get_child_logger
+from quality_control.console_logging import get_child_logger
 
 logger = get_child_logger(__file__)
 

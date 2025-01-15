@@ -5,7 +5,7 @@ Module to check if wordlist is properly sorted.
 import re
 from pathlib import Path
 
-from config.console_logging import get_child_logger
+from quality_control.console_logging import get_child_logger
 
 logger = get_child_logger(__file__)
 

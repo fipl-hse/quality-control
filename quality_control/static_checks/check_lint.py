@@ -9,11 +9,11 @@ import sys
 from os import listdir
 from pathlib import Path
 
-from config.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
-from config.console_logging import get_child_logger
-from config.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
-from config.lab_settings import LabSettings
-from config.project_config import ProjectConfig
+from quality_control.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
+from quality_control.console_logging import get_child_logger
+from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
+from quality_control.lab_settings import LabSettings
+from quality_control.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
 

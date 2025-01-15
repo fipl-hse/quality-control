@@ -6,9 +6,9 @@ Check black to check the style and quality of Python code.
 import re
 import sys
 
-from config.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
-from config.console_logging import get_child_logger
-from config.constants import PROJECT_ROOT
+from quality_control.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
+from quality_control.console_logging import get_child_logger
+from quality_control.constants import PROJECT_ROOT
 
 logger = get_child_logger(__file__)
 
@@ -21,7 +21,7 @@ def check_spelling_on_paths() -> tuple[str, str, int]:
     Returns:
         tuple[str, str, int]: stdout, stderr, exit code
     """
-    spelling_args = ["-m", "pyspelling", "-c", "config/spellcheck/.spellcheck.yaml", "-v"]
+    spelling_args = ["-m", "pyspelling", "-c", "quality_control/spellcheck/.spellcheck.yaml", "-v"]
 
     return _run_console_tool(str(choose_python_exe()), spelling_args, debug=True, cwd=PROJECT_ROOT)
 

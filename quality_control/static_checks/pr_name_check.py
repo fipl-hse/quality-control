@@ -8,9 +8,9 @@ import re
 import sys
 from re import Pattern
 
-from config.console_logging import get_child_logger
-from config.constants import PROJECT_CONFIG_PATH
-from config.project_config import ProjectConfig
+from quality_control.console_logging import get_child_logger
+from quality_control.constants import PROJECT_CONFIG_PATH
+from quality_control.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
 
