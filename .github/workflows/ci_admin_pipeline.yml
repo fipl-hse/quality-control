@@ -44,7 +44,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
-          python quality_control/spellcheck/check_spelling.p
+          python quality_control/spellcheck/check_spelling.py
 
   docstring-style-checks:
     name: Docstring style checks
@@ -60,7 +60,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
-          python quality_controlstatic_checks/check_docstrings.py
+          python quality_control/static_checks/check_docstrings.py
 
   requirements-check:
     name: Requirements check
@@ -76,7 +76,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
-          python quality_controlstatic_checks/requirements_check.py
+          python quality_control/static_checks/requirements_check.py
 
   newline-check:
     name: Newline check
@@ -92,7 +92,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
-          python quality_controlstatic_checks/newline_check.py
+          python quality_control/static_checks/newline_check.py
 
   black-check:
     name: Black check
@@ -108,7 +108,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
-          python quality_controlstatic_checks/check_black.py
+          python quality_control/static_checks/check_black.py
 
   code-style:
     name: Code Style
@@ -127,7 +127,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
-          python quality_controlstatic_checks/check_lint.py --repository_type "$REPOSITORY_TYPE"
+          python quality_control/static_checks/check_lint.py --repository_type "$REPOSITORY_TYPE"
 
   mypy-checks:
     name: Mypy checks
@@ -143,7 +143,7 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
-          python quality_controlstatic_checks/check_mypy.py
+          python quality_control/static_checks/check_mypy.py
 
   flake8-checks:
     name: Import style checks
@@ -159,4 +159,4 @@ jobs:
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
-          python quality_controlstatic_checks/check_flake8.py
+          python quality_control/static_checks/check_flake8.py
