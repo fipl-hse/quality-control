@@ -8,7 +8,7 @@ from pathlib import Path
 
 from logging518.config import fileConfig
 
-from config.constants import PROJECT_ROOT
+from quality_control.constants import PROJECT_ROOT
 
 fileConfig(PROJECT_ROOT / "pyproject.toml")
 

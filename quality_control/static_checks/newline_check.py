@@ -4,8 +4,8 @@ Check newline at the end of a file.
 
 import sys
 
-from config.console_logging import get_child_logger
-from config.constants import PROJECT_ROOT
+from quality_control.console_logging import get_child_logger
+from quality_control.constants import PROJECT_ROOT
 
 logger = get_child_logger(__file__)
 

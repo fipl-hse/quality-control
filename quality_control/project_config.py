@@ -13,7 +13,7 @@ from pydantic import TypeAdapter
 # pylint: disable=no-name-in-module
 from pydantic.dataclasses import dataclass
 
-from config.constants import PROJECT_ROOT
+from quality_control.constants import PROJECT_ROOT
 
 
 @dataclass
