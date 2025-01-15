@@ -67,7 +67,7 @@ def check_file(path_to_file: Path) -> None:
     Args:
         path_to_file (Path): Path to file
     """
-    pydoctest_config = PROJECT_ROOT / "config" / "static_checks" / "pydoctest.json"
+    pydoctest_config = PROJECT_ROOT / "quality_control" / "static_checks" / "pydoctest.json"
 
     check_with_pydoctest(path_to_file, pydoctest_config)
 

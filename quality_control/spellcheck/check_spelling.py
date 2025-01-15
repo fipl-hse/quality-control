@@ -21,7 +21,7 @@ def check_spelling_on_paths() -> tuple[str, str, int]:
     Returns:
         tuple[str, str, int]: stdout, stderr, exit code
     """
-    spelling_args = ["-m", "pyspelling", "-c", "config/spellcheck/.spellcheck.yaml", "-v"]
+    spelling_args = ["-m", "pyspelling", "-c", "quality_control/spellcheck/.spellcheck.yaml", "-v"]
 
     return _run_console_tool(str(choose_python_exe()), spelling_args, debug=True, cwd=PROJECT_ROOT)
 
