@@ -5,8 +5,8 @@ matrix:
     ignore-case: true
   dictionary:
     wordlists:
-    - config/spellcheck/.wordlist.txt
-    - config/spellcheck/.wordlist_en.txt
+    - quality_control/spellcheck/.wordlist.txt
+    - quality_control/spellcheck/.wordlist_en.txt
     encoding: utf-8
     output: build/dictionary/dictionary.dic
   pipeline:
@@ -25,8 +25,8 @@ matrix:
     ignore-case: true
   dictionary:
     wordlists:
-    - config/spellcheck/.wordlist.txt
-    - config/spellcheck/.wordlist_en.txt
+    - quality_control/spellcheck/.wordlist.txt
+    - quality_control/spellcheck/.wordlist_en.txt
     encoding: utf-8
     output: build/dictionary/dictionary.dic
   pipeline:
@@ -47,7 +47,7 @@ matrix:
     ignore-case: true
   dictionary:
     wordlists:
-    - config/spellcheck/.wordlist_en.txt
+    - quality_control/spellcheck/.wordlist_en.txt
     encoding: utf-8
     output: build/dictionary/dictionary.dic
   pipeline:
@@ -57,6 +57,6 @@ matrix:
   sources:
   - 'lab*/**/*.py'
   - 'lab*/*.py'
-  - 'config/**/*.py'
-  - 'config/*.py'
+  - 'quality_control/**/*.py'
+  - 'quality_control/*.py'
   default_encoding: utf-8
