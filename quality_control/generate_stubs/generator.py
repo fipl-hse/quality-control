@@ -8,9 +8,8 @@ from pathlib import Path
 from typing import Optional
 
 import ast_comments
-from tap import Tap
-
 from quality_control.console_logging import get_child_logger
+from tap import Tap
 
 logger = get_child_logger(__file__)
 

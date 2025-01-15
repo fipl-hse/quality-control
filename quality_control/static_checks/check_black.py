@@ -38,9 +38,7 @@ def main() -> None:
     logger.info(labs_list)
 
     logger.info("Running black on quality_control")
-    all_paths = [
-        PROJECT_ROOT / "quality_control"
-    ]
+    all_paths = [PROJECT_ROOT / "quality_control"]
     all_paths.extend([PROJECT_ROOT / lab_name for lab_name in labs_list])
     check_black_on_paths(all_paths)
 
