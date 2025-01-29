@@ -46,7 +46,10 @@ def compile_pattern() -> re.Pattern:
         re.Pattern: Compiled pattern
     """
     return re.compile(
-        r"((\w+(-\w+|\[\w+\])*==\d+(\.\d+)+)" r"|((-r|--extra-index-url)\s.*))", re.MULTILINE
+        r"((\w+(-\w+|\[\w+\])*==\d+(\.\d+)+)"
+        r"|((-r|--extra-index-url)\s.*)"
+        r"|(git\+https?://\S+))",
+        re.MULTILINE,
     )
 
 
