@@ -6,16 +6,16 @@ import sys
 from pathlib import Path
 from typing import Iterable, Mapping, Optional
 
-from config.collect_coverage.run_coverage import (
+from quality_control.collect_coverage.run_coverage import (
     CoverageCreateReportError,
     CoverageRunError,
     extract_percentage_from_report,
     run_coverage_collection,
 )
-from config.console_logging import get_child_logger
-from config.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
-from config.lab_settings import LabSettings
-from config.project_config import ProjectConfig
+from quality_control.console_logging import get_child_logger
+from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
+from quality_control.lab_settings import LabSettings
+from quality_control.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
 
