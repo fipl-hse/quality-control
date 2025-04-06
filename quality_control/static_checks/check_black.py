@@ -35,16 +35,14 @@ def main() -> None:
     """
     project_config = ProjectConfig(PROJECT_CONFIG_PATH)
     labs_list = project_config.get_labs_paths()
+    addons = project_config.get_addons_names()
     logger.info(labs_list)
 
-    logger.info("Running black on config, seminars, admin_utils, core_utils, labs")
-    all_paths = [
-        PROJECT_ROOT / "config",
-        PROJECT_ROOT / "seminars",
-        PROJECT_ROOT / "admin_utils",
-        PROJECT_ROOT / "core_utils",
-    ]
+    logger.info(f"Running black on {', '.join(addons)}")
+
+    all_paths = [PROJECT_ROOT / addon for addon in addons]
     all_paths.extend([PROJECT_ROOT / lab_name for lab_name in labs_list])
+
     check_black_on_paths(all_paths)
 
 
