@@ -5,10 +5,10 @@ Check black to check the style and quality of Python code.
 # pylint: disable=duplicate-code
 from pathlib import Path
 
-from quality_control.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
-from quality_control.console_logging import get_child_logger
-from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
-from quality_control.project_config import ProjectConfig
+from config.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
+from config.console_logging import get_child_logger
+from config.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
+from config.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
 
@@ -35,16 +35,14 @@ def main() -> None:
     """
     project_config = ProjectConfig(PROJECT_CONFIG_PATH)
     labs_list = project_config.get_labs_paths()
+    addons = project_config.get_addons_names()
     logger.info(labs_list)
 
-    logger.info("Running black on config, seminars, admin_utils, core_utils, labs")
-    all_paths = [
-        PROJECT_ROOT / "config",
-        PROJECT_ROOT / "seminars",
-        PROJECT_ROOT / "admin_utils",
-        PROJECT_ROOT / "core_utils",
-    ]
+    logger.info(f"Running black on {', '.join(addons)}")
+
+    all_paths = [PROJECT_ROOT / addon for addon in addons]
     all_paths.extend([PROJECT_ROOT / lab_name for lab_name in labs_list])
+
     check_black_on_paths(all_paths)
 
 
