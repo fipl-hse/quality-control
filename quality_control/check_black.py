@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
 from .console_logging import get_child_logger
-from .constants import ABSOLUTE_CWD_PATH
+from .constants import ABSOLUTE_CWD_PATH, ABSOLUTE_PROJECT_CONFIG_PATH
 from .project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
