@@ -13,7 +13,7 @@ from pydantic import TypeAdapter
 # pylint: disable=no-name-in-module
 from pydantic.dataclasses import dataclass
 
-from .constants import PROJECT_ROOT
+from .constants import ABSOLUTE_CWD_PATH
 
 
 @dataclass
@@ -111,7 +111,7 @@ class ProjectConfig(ProjectConfigDTO):
         labs_list = self.get_labs_names()
         if include_addons:
             labs_list.extend(self.get_addons_names())
-        return [PROJECT_ROOT / lab for lab in labs_list]
+        return [ABSOLUTE_CWD_PATH / lab for lab in labs_list]
 
     def get_addons_names(self) -> list:
         """
