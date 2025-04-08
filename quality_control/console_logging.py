@@ -10,7 +10,7 @@ from logging518.config import fileConfig
 
 from .constants import ABSOLUTE_CWD_PATH
 
-fileConfig(PROJECT_ROOT / "pyproject.toml")
+fileConfig(ABSOLUTE_CWD_PATH / "pyproject.toml")
 
 
 def get_root_logger() -> Logger:
