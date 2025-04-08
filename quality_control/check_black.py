@@ -33,7 +33,7 @@ def main() -> None:
     """
     Run black checks for the project.
     """
-    project_config = ProjectConfig(ABSOLUTE_CWD_PATH)
+    project_config = ProjectConfig(ABSOLUTE_PROJECT_CONFIG_PATH)
     labs_list = project_config.get_labs_paths()
     addons = project_config.get_addons_names()
     logger.info(labs_list)

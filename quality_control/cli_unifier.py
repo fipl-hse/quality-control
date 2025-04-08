@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .console_logging import get_child_logger
-from .constants import CONFIG_PACKAGE_PATH
+from .constants import ABSOLUTE_PROJECT_CONFIG_PATH
 
 logger = get_child_logger(__file__)
 
@@ -40,7 +40,7 @@ def log_output(output_type: str, content: bytes | str) -> None:
         content(bytes | str): raw result from the subprocess call
     """
     with open(
-        str(Path(CONFIG_PACKAGE_PATH) / "assets" / "console_tool_log_template.txt"),
+        str(Path(ABSOLUTE_PROJECT_CONFIG_PATH) / "assets" / "console_tool_log_template.txt"),
         encoding="utf-8",
     ) as f:
         output_template = f.read()
