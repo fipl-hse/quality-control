@@ -14,14 +14,17 @@ def collect_requirements() -> List[str]:
 
 def main() -> None:
     setup(
-        name='fipl_config',
+        name='fiplconfig',
         version='0.3',
         packages=find_packages(),
         install_requires=find_namespace_packages(
             where=".", include=["quality_control.*"], exclude=[""]
         ),
         instal_requires=collect_requirements(),
-        python_requires=">=3.11"
+        python_requires=">=3.10",
+        entry_points={
+            'console_scripts': ['fiplconfig=quality_control.check_black:main']
+        }
     )
 
 
