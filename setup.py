@@ -23,7 +23,7 @@ def main() -> None:
         instal_requires=collect_requirements(),
         python_requires=">=3.10",
         entry_points={
-            'console_scripts': ['fiplconfig=quality_control.check_black:main']
+            'console_scripts': ['fiplconfig.check_black=quality_control.check_black:main']
         }
     )
 
