@@ -1,41 +1,29 @@
-from setuptools import setup, find_packages
+from pathlib import Path
+from typing import List
 
-setup(
-    name='fipl_config',
-    version='0.3',
-    packages=find_packages(),
-    install_requires=[
-        'ast-comments==1.2.1',
-        'black==24.8.0',
-        'coverage[toml]==7.4.0',
-        'doc8==1.1.1',
-        'flake8-isort==6.1.1',
-        'flake8-pyproject==1.2.3',
-        'flake8==6.1.0',
-        'ghapi==1.0.4',
-        'logging518==1.0.0',
-        'mypy==1.9.0',
-        'pandas-stubs==2.1.4.231227',
-        'pandas==2.2.1',
-        'pydantic==2.9.2',
-        'pydocstyle==6.3.0',
-        'pydoctest==0.1.22',
-        'pylint==3.2.7',
-        'pyspelling==2.9',
-        'pytest==8.1.1',
-        'regex==2023.12.25',
-        'resplendent==0.3.5',
-        'simplejson==3.19.2',
-        'sphinx-rtd-theme==2.0.0',
-        'sphinx==7.2.6',
-        'sphinx_design==0.5.0',
-        'tqdm==4.66.5',
-        'typed-argument-parser==1.9.0',
-        'types-beautifulsoup4==4.12.0.20240229',
-        'types-networkx==3.2.1.20240425',
-        'types-requests==2.31.0.20240311',
-        'types-simplejson==3.19.0.2',
-        'types-tqdm==4.66.0.5',
-        'types-urllib3==1.26.25.14'
-    ],
-)
+from setuptools import setup, find_packages, find_namespace_packages
+
+
+def collect_requirements() -> List[str]:
+    quality_control_dir = Path("quality_control")
+    requirements_file_path = quality_control_dir / "requirements.txt"
+    with requirements_file_path.open(encoding='utf-8') as requirements_file:
+        requirements = requirements_file.readlines()
+    return [line.strip() for line in requirements]
+
+
+def main() -> None:
+    setup(
+        name='fipl_config',
+        version='0.3',
+        packages=find_packages(),
+        install_requires=find_namespace_packages(
+            where=".", include=["quality_control.*"], exclude=[""]
+        ),
+        instal_requires=collect_requirements(),
+        python_requires=">=3.11"
+    )
+
+
+if __name__ == '__main__':
+    main()
