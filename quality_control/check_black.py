@@ -4,13 +4,23 @@ Check black to check the style and quality of Python code.
 
 # pylint: disable=duplicate-code
 from pathlib import Path
+from typing import Optional
 
+from tap import Tap
+
+import constants
 from .cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
 from .console_logging import get_child_logger
 from .constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
 from .project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
+
+
+class BlackArgumentsParser(Tap):
+    toml_config_path: Optional[Path] = None
+    root_dir: Optional[Path] = None
+    project_config_path: Optional[Path] = None
 
 
 @handles_console_error()
@@ -33,6 +43,12 @@ def main() -> None:
     """
     Run black checks for the project.
     """
+    args = BlackArgumentsParser().parse_args()
+    if args.project_config_path is not None:
+        constants.PROJECT_CONFIG_PATH = args.project_config_path
+    if args.root_dir is not None:
+        constants.PROJECT_ROOT = args.root_dir
+
     project_config = ProjectConfig(PROJECT_CONFIG_PATH)
     labs_list = project_config.get_labs_paths()
     addons = project_config.get_addons_names()
