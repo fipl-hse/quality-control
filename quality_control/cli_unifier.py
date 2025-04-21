@@ -10,8 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any, Callable
 
-from .console_logging import get_child_logger
-from .constants import CONFIG_PACKAGE_PATH
+from console_logging import get_child_logger
+from constants import CONFIG_PACKAGE_PATH
 
 logger = get_child_logger(__file__)
 
