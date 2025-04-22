@@ -18,7 +18,7 @@ def main() -> None:
         version='0.3',
         packages=find_packages(),
         install_requires=find_namespace_packages(
-            where=".", include=["quality_control.*"], exclude=[""]
+            where=".", include=["quality_control.*"], exclude=["quality_control.assets"]
         ),
         instal_requires=collect_requirements(),
         python_requires=">=3.10",
