@@ -2,15 +2,18 @@
 Root logger configuration etc.
 """
 
-from logging import getLogger, Logger
+from logging import Logger, getLogger
 from os.path import sep
 from pathlib import Path
 
 from logging518.config import fileConfig
 
-from constants import PROJECT_ROOT
+from quality_control.constants import PROJECT_ROOT
 
-fileConfig(PROJECT_ROOT / "pyproject.toml")
+try:
+    fileConfig(PROJECT_ROOT / "pyproject.toml")
+except Exception as e:
+    pass
 
 
 def get_root_logger() -> Logger:
