@@ -10,8 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any, Callable
 
-from console_logging import get_child_logger
-from constants import CONFIG_PACKAGE_PATH
+from quality_control.console_logging import get_child_logger
+from quality_control.constants import CONFIG_PACKAGE_PATH
 
 logger = get_child_logger(__file__)
 
@@ -48,21 +48,26 @@ def log_output(output_type: str, content: bytes | str) -> None:
     logger.info(
         output_template.format(
             output_type=output_type,
-            content=convert_raw_output_to_str(content) if isinstance(content, bytes) else content,
+            content=(
+                convert_raw_output_to_str(content)
+                if isinstance(content, bytes)
+                else content
+            ),
         )
     )
 
 
-def choose_python_exe() -> Path:
+def choose_python_exe(lab_path: str | None = None) -> Path:
     """
     Select python binary path depending on current OS.
 
     Returns:
         Path: A path to python exe
     """
-    lab_path = Path(__file__).parent.parent
+    if lab_path is None:
+        lab_path = Path(__file__).parent.parent
     if platform.system() == "Windows":
-        python_exe_path = lab_path / "venv" / "Scripts" / "python.exe"
+        python_exe_path = Path(lab_path) / "venv" / "Scripts" / "python.exe"
     else:
         python_exe_path = lab_path / "venv" / "bin" / "python"
     return python_exe_path
@@ -103,7 +108,9 @@ def modify_path(path: str) -> str:
     return modified_path
 
 
-def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str, str, int]:
+def _run_console_tool(
+    exe: str, /, args: list[str], **kwargs: Any
+) -> tuple[str, str, int]:
     """
     Run CLI commands.
 
@@ -140,7 +147,9 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
     if env:
         result = subprocess.run(options, capture_output=True, check=True, env=env)
     elif kwargs.get("cwd"):
-        result = subprocess.run(options, capture_output=True, check=True, cwd=kwargs.get("cwd"))
+        result = subprocess.run(
+            options, capture_output=True, check=True, cwd=kwargs.get("cwd")
+        )
     else:
         result = subprocess.run(options, capture_output=True, check=True)
     return (
