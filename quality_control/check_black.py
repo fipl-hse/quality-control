@@ -22,8 +22,9 @@ logger = get_child_logger(__file__)
 
 class BlackArgumentsParser(Tap):
     toml_config_path: Optional[Path] = None
-    root_dir: Optional[Path] = None
+    root_dir: Optional[Path] = Path(os.getcwd())
     project_config_path: Optional[Path] = None
+
 
 
 @handles_console_error()
