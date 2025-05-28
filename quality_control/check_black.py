@@ -52,7 +52,7 @@ def check_black_on_paths(
     ]
 
     return _run_console_tool(
-        str(choose_python_exe(lab_path=os.getcwd())),
+        str(choose_python_exe(lab_path=Path(os.getcwd()))),
         black_args,
         debug=True,
         cwd=PROJECT_ROOT,
