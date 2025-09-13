@@ -10,7 +10,6 @@ from typing import Optional
 from logging518.config import fileConfig
 from tap import Tap
 
-import quality_control.constants
 from quality_control.cli_unifier import (
     _run_console_tool,
     choose_python_exe,
