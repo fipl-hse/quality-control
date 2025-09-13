@@ -15,11 +15,16 @@ setup(
     version="0.3",
     packages=find_packages(include=["quality_control", "quality_control.*"]),
     include_package_data=True,
+    package_data={
+        "quality_control": ["**/*.txt", "**/*.json", "**/*.yaml"],
+    },
     install_requires=collect_requirements(),
     python_requires=">=3.10",
     entry_points={
         "console_scripts": [
             "fiplconfig.check_black=quality_control.static_checks.check_black:main",
+            "fiplconfig.check_init=quality_control.static_checks.check_init:main",
+            "fiplconfig.check_doc8=quality_control.static_checks.check_doc8:main",
         ]
     },
     long_description=(Path(__file__).parent / "README.md").read_text(encoding="utf-8"),

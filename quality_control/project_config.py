@@ -98,12 +98,15 @@ class ProjectConfig(ProjectConfigDTO):
         """
         return [lab.name for lab in self._dto.labs]
 
-    def get_labs_paths(self, include_addons: bool = True) -> list:
+    def get_labs_paths(
+        self, include_addons: bool = True, root_dir: Path = PROJECT_ROOT
+    ) -> list:
         """
         Get labs paths.
 
         Args:
             include_addons (bool): Include addons or not
+            root_dir (Path): Root path
 
         Returns:
             list: Paths to labs
@@ -111,7 +114,7 @@ class ProjectConfig(ProjectConfigDTO):
         labs_list = self.get_labs_names()
         if include_addons:
             labs_list.extend(self.get_addons_names())
-        return [PROJECT_ROOT / lab for lab in labs_list]
+        return [root_dir / lab for lab in labs_list]
 
     def get_addons_names(self) -> list:
         """

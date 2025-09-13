@@ -4,6 +4,7 @@ Check black to check the style and quality of Python code.
 
 import os
 from pathlib import Path
+import sys
 from typing import Optional
 
 # pylint: disable=duplicate-code
@@ -30,67 +31,64 @@ class BlackArgumentsParser(Tap):
 
 @handles_console_error()
 def check_black_on_paths(
-    paths: list[Path], toml_config_path: Optional[Path], root_dir: Optional[Path]
+    paths: list[Path],
+    toml_config_path: Path,
+    python_exe: Path,
+    root_dir: Path,
 ) -> tuple[str, str, int]:
-    if toml_config_path:
-        config_path = (
-            toml_config_path
-            if toml_config_path.is_absolute()
-            else (root_dir or Path.cwd()) / toml_config_path
-        ).resolve()
-    else:
-        config_path = ((root_dir or Path.cwd()) / "pyproject.toml").resolve()
+    """
+    Run Black in --check mode on the given paths.
 
+    Args:
+        paths (list[Path]): List of paths to check.
+        toml_config_path (Path): Path to pyproject.toml (Black config).
+        python_exe (Path): Python executable to run Black.
+        root_dir (Path): Root directory for running Black.
+
+    Returns:
+        tuple[str, str, int]: stdout, stderr, and return code.
+    """
     black_args = [
         "-m",
         "black",
-        *[str(p) for p in paths if p.exists()],
         "--check",
         "--config",
-        str(config_path),
+        str(toml_config_path),
+        *[str(p) for p in paths if p.exists()],
     ]
-
-    return _run_console_tool(
-        str(choose_python_exe(lab_path=Path(os.getcwd()))),
-        black_args,
-        debug=True,
-        cwd=PROJECT_ROOT,
-    )
+    return _run_console_tool(str(python_exe), black_args, debug=True, cwd=root_dir)
 
 
 def main() -> None:
-    import quality_control.cli_unifier
-
-    quality_control.cli_unifier.CONFIG_PACKAGE_PATH = (
-        quality_control.constants.QUALITY_CONTROL_PATH / "quality_control"
-    )
-
     args = BlackArgumentsParser().parse_args()
 
-    if args.project_config_path is not None:
-        quality_control.constants.PROJECT_CONFIG_PATH = args.project_config_path
-    if args.root_dir is not None:
-        quality_control.constants.PROJECT_ROOT = args.root_dir
+    root_dir = args.root_dir.resolve()
+    toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
-    toml_logging_config = args.root_dir / "pyproject.toml"
-    if toml_logging_config.exists():
-        fileConfig(toml_logging_config)
+    project_config_path = (
+        args.project_config_path or (root_dir / "project_config.json")
+    ).resolve()
 
-    project_config = ProjectConfig(args.project_config_path)
+    project_config = ProjectConfig(project_config_path)
+
+    fileConfig(toml_config)
+
     labs_list = project_config.get_labs_paths()
     addons = project_config.get_addons_names()
+    logger.info(f"Labs to check with black: {labs_list}")
+    logger.info(f"Addons to check with black: {addons}")
 
-    logger.info("Labs: %s", labs_list)
-    logger.info("Addons: %s", addons)
-    logger.info("Running black on: %s", ", ".join(addons))
+    all_paths = [root_dir / addon for addon in addons] + [
+        root_dir / lab for lab in labs_list
+    ]
 
-    all_paths = [args.root_dir / addon for addon in addons]
-    all_paths += [args.root_dir / lab for lab in labs_list]
+    python_exe = choose_python_exe(lab_path=root_dir)
 
     check_black_on_paths(
         all_paths,
-        toml_config_path=args.toml_config_path,
-        root_dir=args.root_dir,
+        toml_config_path=toml_config,
+        python_exe=python_exe,
+        root_dir=root_dir,
     )
 
 
