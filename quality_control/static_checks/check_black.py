@@ -3,8 +3,8 @@ Check black to check the style and quality of Python code.
 """
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Optional
 
 # pylint: disable=duplicate-code

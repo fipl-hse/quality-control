@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 def collect_requirements() -> List[str]:
