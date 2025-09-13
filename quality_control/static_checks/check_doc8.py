@@ -5,11 +5,9 @@ Check doc8 for style checking of rst files.
 from logging518.config import fileConfig
 from quality_control.console_logging import get_child_logger
 from pathlib import Path
-from typing import Optional
 
 from quality_control.project_config import ProjectConfig
 from quality_control.static_checks.check_black import BlackArgumentsParser
-from tap import Tap
 
 from quality_control.cli_unifier import (
     _run_console_tool,

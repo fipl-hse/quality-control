@@ -25,6 +25,7 @@ setup(
             "fiplconfig.check_black=quality_control.static_checks.check_black:main",
             "fiplconfig.check_init=quality_control.static_checks.check_init:main",
             "fiplconfig.check_doc8=quality_control.static_checks.check_doc8:main",
+            "fiplconfig.check_docstrings=quality_control.static_checks.check_docstrings:main",
         ]
     },
     long_description=(Path(__file__).parent / "README.md").read_text(encoding="utf-8"),
