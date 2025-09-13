@@ -11,11 +11,8 @@ from typing import Optional
 from logging518.config import fileConfig
 from tap import Tap
 
-from quality_control.cli_unifier import (
-    _run_console_tool,
-    choose_python_exe,
-    handles_console_error,
-)
+from quality_control.cli_unifier import (_run_console_tool, choose_python_exe,
+                                         handles_console_error)
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
@@ -73,7 +70,7 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    labs_list = project_config.get_labs_paths()
+    labs_list = project_config.get_labs_paths(root_dir=root_dir)
     addons = project_config.get_addons_names()
     logger.info(f"Labs to check with black: {labs_list}")
     logger.info(f"Addons to check with black: {addons}")
