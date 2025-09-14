@@ -16,7 +16,7 @@ setup(
     packages=find_packages(include=["quality_control", "quality_control.*"]),
     include_package_data=True,
     package_data={
-        "quality_control": ["**/*.txt", "**/*.json", "**/*.yaml"],
+        "quality_control": ["*.txt", "*.json", "*.yaml"],
     },
     install_requires=collect_requirements(),
     python_requires=">=3.10",
