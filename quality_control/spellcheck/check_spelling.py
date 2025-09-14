@@ -40,7 +40,7 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    stdout, _, return_code = check_spelling_on_paths()
+    stdout, _, return_code = check_spelling_on_paths(root_dir=root_dir)
     if return_code == 0:
         logger.info("Spelling check is passed.")
         sys.exit(0)
