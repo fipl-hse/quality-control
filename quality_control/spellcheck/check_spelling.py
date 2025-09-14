@@ -2,6 +2,8 @@
 Check spelling in project files.
 """
 
+from importlib.resources import files
+import os
 from pathlib import Path
 import re
 import sys
@@ -10,6 +12,7 @@ from quality_control.cli_unifier import _run_console_tool, choose_python_exe, ha
 from quality_control.console_logging import get_child_logger
 
 from logging518.config import fileConfig
+from quality_control import spellcheck
 from quality_control.constants import PROJECT_ROOT
 from quality_control.static_checks.check_black import BlackArgumentsParser
 
@@ -33,6 +36,9 @@ def main() -> None:
     """
     Run spellchecking for the project.
     """
+
+    SPELLCHECK_DIR = files(spellcheck)
+    os.environ["SPELLCHECK_DIR"] = str(SPELLCHECK_DIR)
     args = BlackArgumentsParser().parse_args()
 
     root_dir = args.root_dir.resolve()
