@@ -27,6 +27,12 @@ setup(
             "fiplconfig.check_doc8=quality_control.static_checks.check_doc8:main",
             "fiplconfig.check_docstrings=quality_control.static_checks.check_docstrings:main",
             "fiplconfig.check_mypy=quality_control.static_checks.check_mypy:main",
+            "fiplconfig.check_flake8=quality_control.static_checks.check_flake8:main",
+            "fiplconfig.check_actual_stubs=quality_control.static_checks.check_actual_stubs:main",
+            "fiplconfig.check_lint=quality_control.static_checks.check_lint:main",
+            "fiplconfig.check_newline=quality_control.static_checks.check_newline:main",
+            "fiplconfig.check_pr_name=quality_control.static_checks.check_pr_name:main",
+            "fiplconfig.check_requirements=quality_control.static_checks.check_requirements:main",
         ]
     },
     long_description=(Path(__file__).parent / "README.md").read_text(encoding="utf-8"),

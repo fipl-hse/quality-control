@@ -3,6 +3,7 @@ Settings manager.
 """
 
 import enum
+
 # pylint: disable=no-name-in-module
 from pathlib import Path
 
