@@ -17,6 +17,15 @@ from quality_control.constants import PROJECT_ROOT
 
 
 @dataclass
+class LabSettings:
+    """
+    BaseModel for labs settings
+    """
+
+    ignore: list[str] | None = field(default_factory=list)
+
+
+@dataclass
 class Lab:
     """
     BaseModel for labs.
@@ -24,6 +33,7 @@ class Lab:
 
     name: str = field(default_factory=str)
     coverage: int = field(default_factory=int)
+    settings: LabSettings | None = field(default_factory=LabSettings)
 
 
 @dataclass
@@ -185,3 +195,15 @@ class ProjectConfig(ProjectConfigDTO):
             str: A json view of ProjectConfig
         """
         return str(self._dto.model_dump_json(indent=4))
+    
+    def get_lab_config(self, lab_name: str) -> Lab | None:
+        """
+        Returns configuration of the lab.
+
+        Args:
+            lab_name (str): Name of lab
+
+        Returns:
+            Lab | None: Configuration of lab
+        """
+        return next((lab for lab in self._dto.labs if lab.name == lab_name), None)
