@@ -5,8 +5,8 @@ matrix:
     ignore-case: true
   dictionary:
     wordlists:
-    - config/spellcheck/.wordlist.txt
-    - config/spellcheck/.wordlist_en.txt
+    - .wordlist.txt
+    - .wordlist_en.txt
     encoding: utf-8
     output: build/dictionary/dictionary.dic
   pipeline:
@@ -25,8 +25,8 @@ matrix:
     ignore-case: true
   dictionary:
     wordlists:
-    - config/spellcheck/.wordlist.txt
-    - config/spellcheck/.wordlist_en.txt
+    - .wordlist.txt
+    - .wordlist_en.txt
     encoding: utf-8
     output: build/dictionary/dictionary.dic
   pipeline:
@@ -48,7 +48,7 @@ matrix:
     ignore-case: true
   dictionary:
     wordlists:
-    - config/spellcheck/.wordlist_en.txt
+    - .wordlist_en.txt
     encoding: utf-8
     output: build/dictionary/dictionary.dic
   pipeline:
