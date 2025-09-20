@@ -9,8 +9,11 @@ from typing import Iterable, Mapping
 from logging518.config import fileConfig
 
 from quality_control.collect_coverage.run_coverage import (
-    CoverageCreateReportError, CoverageRunError,
-    extract_percentage_from_report, run_coverage_collection)
+    CoverageCreateReportError,
+    CoverageRunError,
+    extract_percentage_from_report,
+    run_coverage_collection,
+)
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
 from quality_control.lab_settings import LabSettings

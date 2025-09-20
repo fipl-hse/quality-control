@@ -9,8 +9,11 @@ from typing import Optional
 from logging518.config import fileConfig
 from tap import Tap
 
-from quality_control.cli_unifier import (_run_console_tool, choose_python_exe,
-                                         handles_console_error)
+from quality_control.cli_unifier import (
+    _run_console_tool,
+    choose_python_exe,
+    handles_console_error,
+)
 from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT

@@ -5,11 +5,16 @@ Runner for generating and auto-formatting stubs.
 import sys
 from pathlib import Path
 
-from quality_control.cli_unifier import (_run_console_tool, choose_python_exe,
-                                         handles_console_error)
+from quality_control.cli_unifier import (
+    _run_console_tool,
+    choose_python_exe,
+    handles_console_error,
+)
 from quality_control.console_logging import get_child_logger
 from quality_control.generate_stubs.generator import (
-    ArgumentParser, NoDocStringForAMethodError)
+    ArgumentParser,
+    NoDocStringForAMethodError,
+)
 
 logger = get_child_logger(__file__)
 
