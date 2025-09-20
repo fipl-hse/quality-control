@@ -69,7 +69,7 @@ def choose_python_exe(lab_path: str | None = None) -> Path:
     if platform.system() == "Windows":
         python_exe_path = Path(lab_path) / "venv" / "Scripts" / "python.exe"
     else:
-        python_exe_path = lab_path / "venv" / "bin" / "python"
+        python_exe_path = Path(lab_path) / "venv" / "bin" / "python"
     return python_exe_path
 
 
