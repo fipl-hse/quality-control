@@ -15,7 +15,7 @@ from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
-from quality_control.static_checks.check_black import BlackArgumentsParser
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
@@ -70,7 +70,7 @@ def main() -> None:
     """
     Main function to run start.py checks for each lab.
     """
-    args = BlackArgumentsParser().parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()

@@ -2,12 +2,9 @@
 Check black to check the style and quality of Python code.
 """
 
-import os
 from pathlib import Path
-from typing import Optional
 
 from logging518.config import fileConfig
-from tap import Tap
 
 from quality_control.cli_unifier import (
     _run_console_tool,
@@ -15,18 +12,12 @@ from quality_control.cli_unifier import (
     handles_console_error,
 )
 from quality_control.console_logging import get_child_logger
-from quality_control.constants import PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 # pylint: disable=duplicate-code
 
 logger = get_child_logger(__file__)
-
-
-class BlackArgumentsParser(Tap):
-    toml_config_path: Optional[Path] = None
-    root_dir: Optional[Path] = Path(os.getcwd())
-    project_config_path: Optional[Path] = None
 
 
 @handles_console_error()
@@ -60,7 +51,7 @@ def check_black_on_paths(
 
 
 def main() -> None:
-    args = BlackArgumentsParser().parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()

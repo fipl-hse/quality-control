@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 from logging518.config import fileConfig
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 from tap import Tap
 
 from quality_control.cli_unifier import (
@@ -26,10 +27,7 @@ from quality_control.project_config import ProjectConfig
 logger = get_child_logger(__file__)
 
 
-class BlackArgumentsParser(Tap):
-    toml_config_path: Optional[Path] = None
-    root_dir: Optional[Path] = Path(os.getcwd())
-    project_config_path: Optional[Path] = None
+class QualityControlLintArgumentsParser(QualityControlArgumentsParser):
     repository_type: Optional[str] = None
 
 
@@ -154,7 +152,7 @@ def main() -> None:
     """
     Run lint checks for the project.
     """
-    args = BlackArgumentsParser().parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()

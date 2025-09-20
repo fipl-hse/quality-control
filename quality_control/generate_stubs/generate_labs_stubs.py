@@ -16,7 +16,7 @@ from quality_control.project_config import ProjectConfig
 logger = get_child_logger(__file__)
 
 
-def _generate_stubs_single_module(module_path: Path) -> None:
+def _generate_stubs_single_module(module_path: Path, root_dir: Path) -> None:
     """
     Process single module.
 
@@ -28,7 +28,7 @@ def _generate_stubs_single_module(module_path: Path) -> None:
     source_code = cleanup_code(module_path)
     with stub_path.open(mode="w", encoding="utf-8") as f:
         f.write(source_code)
-    format_stub_file(stub_path)
+    format_stub_file(stub_path, root_dir=root_dir)
     sort_stub_imports(stub_path)
 
 
@@ -53,7 +53,7 @@ def generate_all_stubs(project_config: ProjectConfig) -> None:
             if not module_path.exists():
                 continue
             logger.info(f"{module_path}")
-            _generate_stubs_single_module(module_path)
+            _generate_stubs_single_module(module_path, PROJECT_ROOT)
 
 
 def main() -> None:

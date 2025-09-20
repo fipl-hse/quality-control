@@ -12,7 +12,7 @@ from quality_control.cli_unifier import (
 )
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_ROOT
-from quality_control.static_checks.check_black import BlackArgumentsParser
+from quality_control.static_checks.check_black import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
@@ -36,7 +36,7 @@ def main() -> None:
     """
     Check docstrings for labs, config and core_utils packages.
     """
-    args = BlackArgumentsParser().parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
     root_dir = args.root_dir.resolve()
     pydoctest_path = (PROJECT_ROOT / "static_checks" / "pydoctest.json").resolve()
 

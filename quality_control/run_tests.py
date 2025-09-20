@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 from logging518.config import fileConfig
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 from tap import Tap
 
 from quality_control.cli_unifier import (
@@ -16,13 +17,12 @@ from quality_control.cli_unifier import (
 )
 from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
-from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
 
 
-class CommandLineInterface(Tap):
+class CommandLineInterface(QualityControlArgumentsParser):
     """
     Types for the argument parser.
     """
@@ -31,9 +31,6 @@ class CommandLineInterface(Tap):
     pr_author: str
     lab_path: str | None = None
     pytest_label: str | None = None
-    toml_config_path: Optional[Path] = None
-    root_dir: Optional[Path] = Path(os.getcwd())
-    project_config_path: Optional[Path] = None
 
 
 def prepare_pytest_args(

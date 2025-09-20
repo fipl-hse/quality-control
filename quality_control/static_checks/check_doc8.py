@@ -13,7 +13,7 @@ from quality_control.cli_unifier import (
 )
 from quality_control.console_logging import get_child_logger
 from quality_control.project_config import ProjectConfig
-from quality_control.static_checks.check_black import BlackArgumentsParser
+from quality_control.static_checks.check_black import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
@@ -49,7 +49,7 @@ def check_doc8_on_paths(
 
 
 def main() -> None:
-    args = BlackArgumentsParser().parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()

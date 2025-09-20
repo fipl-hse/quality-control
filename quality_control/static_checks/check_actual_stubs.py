@@ -8,14 +8,13 @@ from pathlib import Path
 
 from logging518.config import fileConfig
 
-from quality_control.constants import PROJECT_CONFIG_PATH
 from quality_control.generate_stubs.generator import cleanup_code
 from quality_control.generate_stubs.run_generator import (
     format_stub_file,
     sort_stub_imports,
 )
 from quality_control.project_config import ProjectConfig
-from quality_control.static_checks.check_black import BlackArgumentsParser
+from quality_control.static_checks.check_black import QualityControlArgumentsParser
 
 
 def get_code(code_path: Path) -> str:
@@ -52,7 +51,7 @@ def main() -> None:
     """
     Check the relevance of stubs.
     """
-    args = BlackArgumentsParser().parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
