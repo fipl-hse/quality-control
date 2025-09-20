@@ -22,20 +22,14 @@ logger = get_child_logger(__file__)
 
 
 @handles_console_error(ok_codes=(0, 1))
-def check_spelling_on_paths(root_dir: Path) -> tuple[str, str, int]:
+def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
     """
     Run spelling checks on paths.
 
     Returns:
         tuple[str, str, int]: stdout, stderr, exit code
     """
-    spelling_args = [
-        "-m",
-        "pyspelling",
-        "-c",
-        f"{PROJECT_ROOT}/spellcheck/.spellcheck.yaml",
-        "-v",
-    ]
+    spelling_args = ["-m", "pyspelling", "-c", "config/spellcheck/.spellcheck.yaml", "-n", task]
 
     return _run_console_tool(
         str(choose_python_exe(lab_path=root_dir)),
@@ -92,21 +86,21 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    stdout, _, return_code = check_spelling_on_paths("ru")
+    stdout, _, return_code = check_spelling_on_paths(task="ru", root_dir=root_dir)
     missed_russian = (
         set(get_misspelled_from_stdout(stdout, russian_word_p))
         if return_code
         else set()
     )
 
-    stdout, _, return_code = check_spelling_on_paths("en")
+    stdout, _, return_code = check_spelling_on_paths(task="en", root_dir=root_dir)
     missed_english = (
         set(get_misspelled_from_stdout(stdout, english_word_p))
         if return_code
         else set()
     )
 
-    stdout, _, return_code = check_spelling_on_paths("docstrings")
+    stdout, _, return_code = check_spelling_on_paths(task="docstrings", root_dir=root_dir)
     missed_docstrings = (
         set(get_misspelled_from_stdout(stdout)) if return_code else set()
     )

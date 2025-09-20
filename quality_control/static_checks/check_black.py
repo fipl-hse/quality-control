@@ -24,7 +24,6 @@ logger = get_child_logger(__file__)
 def check_black_on_paths(
     paths: list[Path],
     toml_config_path: Path,
-    python_exe: Path,
     root_dir: Path,
 ) -> tuple[str, str, int]:
     """
@@ -33,7 +32,6 @@ def check_black_on_paths(
     Args:
         paths (list[Path]): List of paths to check.
         toml_config_path (Path): Path to pyproject.toml (Black config).
-        python_exe (Path): Python executable to run Black.
         root_dir (Path): Root directory for running Black.
 
     Returns:
@@ -47,7 +45,7 @@ def check_black_on_paths(
         str(toml_config_path),
         *[str(p) for p in paths if p.exists()],
     ]
-    return _run_console_tool(str(python_exe), black_args, debug=True, cwd=root_dir)
+    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), black_args, debug=True, cwd=root_dir)
 
 
 def main() -> None:
@@ -73,12 +71,9 @@ def main() -> None:
         root_dir / lab for lab in labs_list
     ]
 
-    python_exe = choose_python_exe(lab_path=root_dir)
-
     check_black_on_paths(
         all_paths,
         toml_config_path=toml_config,
-        python_exe=python_exe,
         root_dir=root_dir,
     )
 

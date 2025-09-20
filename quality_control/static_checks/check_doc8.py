@@ -20,7 +20,7 @@ logger = get_child_logger(__file__)
 
 @handles_console_error()
 def check_doc8_on_paths(
-    paths: list[Path], path_to_config: Path, python_exe: Path, root_dir: Path
+    paths: list[Path], path_to_config: Path, root_dir: Path
 ) -> tuple[str, str, int]:
     """
     Run doc8 checks for the project.
@@ -28,7 +28,6 @@ def check_doc8_on_paths(
     Args:
         paths (list[Path]): List of RST files.
         path_to_config (Path): Path to the config file.
-        python_exe (Path): Python executable to run Doc8.
         root_dir (Path): Root directory for running doc8.
 
     Returns:
@@ -45,7 +44,7 @@ def check_doc8_on_paths(
         "--config",
         str(path_to_config),
     ]
-    return _run_console_tool(str(python_exe), doc8_args, debug=True, cwd=root_dir)
+    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), doc8_args, debug=True, cwd=root_dir)
 
 
 def main() -> None:
@@ -60,7 +59,6 @@ def main() -> None:
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)
 
-    python_exe = choose_python_exe(lab_path=root_dir)
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
 
     logger.info("Running doc8 for main docs")
@@ -68,7 +66,6 @@ def main() -> None:
     check_doc8_on_paths(
         paths=rst_main_files,
         path_to_config=toml_config,
-        python_exe=python_exe,
         root_dir=root_dir,
     )
 
@@ -79,7 +76,6 @@ def main() -> None:
     check_doc8_on_paths(
         paths=rst_files,
         path_to_config=toml_config,
-        python_exe=python_exe,
         root_dir=root_dir,
     )
 
@@ -90,7 +86,6 @@ def main() -> None:
         check_doc8_on_paths(
             paths=rst_labs_files,
             path_to_config=toml_config,
-            python_exe=python_exe,
             root_dir=root_dir,
         )
 

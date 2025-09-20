@@ -25,7 +25,6 @@ logger = get_child_logger(__file__)
 @handles_console_error()
 def check_flake8_on_paths(
     paths: list[Path],
-    python_exe: Path,
     root_dir: Path,
 ) -> tuple[str, str, int]:
     """
@@ -39,7 +38,7 @@ def check_flake8_on_paths(
     """
     flake_args = ["-m", "flake8", *map(str, filter(lambda x: x.exists(), paths))]
 
-    return _run_console_tool(str(python_exe), flake_args, debug=True, cwd=root_dir)
+    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), flake_args, debug=True, cwd=root_dir)
 
 
 def main() -> None:
@@ -62,17 +61,15 @@ def main() -> None:
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
     addons = project_config.get_addons_names()
 
-    python_exe = choose_python_exe(lab_path=root_dir)
-
     logger.info(f"Running flake8 on {' '.join(addons)}")
     check_flake8_on_paths(
-        [root_dir / addon for addon in addons], python_exe=python_exe, root_dir=root_dir
+        [root_dir / addon for addon in addons], root_dir=root_dir
     )
 
     if (root_dir / "core_utils").exists():
         logger.info("core_utils exist")
         check_flake8_on_paths(
-            [root_dir / "core_utils"], python_exe=python_exe, root_dir=root_dir
+            [root_dir / "core_utils"], root_dir=root_dir
         )
 
     for lab_name in labs_list:
@@ -85,7 +82,7 @@ def main() -> None:
             if target_score > 5:
                 logger.info(f"Running flake8 for lab {lab_path}")
                 check_flake8_on_paths(
-                    [lab_path], python_exe=python_exe, root_dir=root_dir
+                    [lab_path], root_dir=root_dir
                 )
 
 

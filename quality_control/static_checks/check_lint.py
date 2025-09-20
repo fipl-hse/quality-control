@@ -152,7 +152,7 @@ def main() -> None:
     """
     Run lint checks for the project.
     """
-    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
+    args = QualityControlLintArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()

@@ -23,7 +23,7 @@ logger = get_child_logger(__file__)
 
 @handles_console_error()
 def check_mypy_on_paths(
-    paths: list[Path], path_to_config: Path, python_exe: Path, root_dir: Path
+    paths: list[Path], path_to_config: Path, root_dir: Path
 ) -> tuple[str, str, int]:
     """
     Run mypy checks for the project.
@@ -43,7 +43,7 @@ def check_mypy_on_paths(
         str(path_to_config),
     ]
 
-    return _run_console_tool(str(python_exe), mypy_args, debug=True, cwd=root_dir)
+    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), mypy_args, debug=True, cwd=root_dir)
 
 
 def main() -> None:
@@ -61,7 +61,6 @@ def main() -> None:
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)
 
-    python_exe = choose_python_exe(lab_path=root_dir)
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
     addons = project_config.get_addons_names()
 
@@ -70,7 +69,6 @@ def main() -> None:
         check_mypy_on_paths(
             [root_dir / addon for addon in addons],
             toml_config,
-            python_exe=python_exe,
             root_dir=root_dir,
         )
     print(f"ROOT DIRI: {root_dir}")
@@ -84,7 +82,7 @@ def main() -> None:
             if target_score > 7:
                 logger.info(f"Running mypy for lab {lab_path}")
                 check_mypy_on_paths(
-                    [lab_path], toml_config, python_exe=python_exe, root_dir=root_dir
+                    [lab_path], toml_config, root_dir=root_dir
                 )
 
 
