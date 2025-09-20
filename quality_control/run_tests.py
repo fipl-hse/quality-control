@@ -5,14 +5,16 @@ Run tests for each lab using pytest.
 import os
 from pathlib import Path
 from typing import Optional
+
+from logging518.config import fileConfig
 from tap import Tap
 
-from quality_control.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
+from quality_control.cli_unifier import (_run_console_tool, choose_python_exe,
+                                         handles_console_error)
 from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
-from logging518.config import fileConfig
 
 logger = get_child_logger(__file__)
 
@@ -32,7 +34,10 @@ class CommandLineInterface(Tap):
 
 
 def prepare_pytest_args(
-    lab_path: str, target_score: int, project_config_path: Path, pytest_label: str | None = None, 
+    lab_path: str,
+    target_score: int,
+    project_config_path: Path,
+    pytest_label: str | None = None,
 ) -> list[str]:
     """
     Build the arguments for running pytest.
@@ -76,7 +81,9 @@ def run_pytest(root_dir: Path, pytest_args: list[str]) -> tuple[str, str, int]:
         tuple[str, str, int]: stdout, stderr, exit code
     """
     args = ["-m", "pytest", *pytest_args]
-    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), args, cwd=root_dir, debug=True)
+    return _run_console_tool(
+        str(choose_python_exe(lab_path=root_dir)), args, cwd=root_dir, debug=True
+    )
 
 
 def check_skip(root_dir: Path, lab_path: str) -> bool:
@@ -119,7 +126,12 @@ def main() -> None:
         if check_skip(root_dir=root_dir, lab_path=args.lab_path):
             return
         target_score = get_target_score(root_dir / args.lab_path)
-        pytest_args = prepare_pytest_args(lab_path=args.lab_path, target_score=target_score, project_config_path=project_config_path, pytest_label=args.pytest_label)
+        pytest_args = prepare_pytest_args(
+            lab_path=args.lab_path,
+            target_score=target_score,
+            project_config_path=project_config_path,
+            pytest_label=args.pytest_label,
+        )
 
         _, _, return_code = run_pytest(root_dir, pytest_args)
         if return_code == 5:
@@ -140,7 +152,11 @@ def main() -> None:
             logger.info(f"Running tests for lab {lab_name}")
 
             target_score = get_target_score(root_dir / lab_name)
-            pytest_args = prepare_pytest_args(lab_path=lab_name, target_score=target_score, project_config_path=project_config_path)
+            pytest_args = prepare_pytest_args(
+                lab_path=lab_name,
+                target_score=target_score,
+                project_config_path=project_config_path,
+            )
 
             _, _, return_code = run_pytest(root_dir, pytest_args)
             if return_code == 5:

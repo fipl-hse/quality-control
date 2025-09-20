@@ -9,7 +9,6 @@ from pathlib import Path
 from re import Pattern
 
 from pydantic import TypeAdapter
-
 # pylint: disable=no-name-in-module
 from pydantic.dataclasses import dataclass
 
@@ -195,7 +194,7 @@ class ProjectConfig(ProjectConfigDTO):
             str: A json view of ProjectConfig
         """
         return str(self._dto.model_dump_json(indent=4))
-    
+
     def get_lab_config(self, lab_name: str) -> Lab | None:
         """
         Returns configuration of the lab.

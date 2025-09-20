@@ -27,7 +27,9 @@ def check_assert_line(content: str) -> bool:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Checks start.py files and tests them")
-    parser.add_argument("--start_py_content", type=str, help="Content of start.py for each lab")
+    parser.add_argument(
+        "--start_py_content", type=str, help="Content of start.py for each lab"
+    )
     args: argparse.Namespace = parser.parse_args()
 
     if check_assert_line(args.start_py_content):

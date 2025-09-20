@@ -2,11 +2,12 @@
 Check newline at the end of a file.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
+
+from logging518.config import fileConfig
 
 from quality_control.console_logging import get_child_logger
-from logging518.config import fileConfig
 from quality_control.static_checks.check_black import BlackArgumentsParser
 
 logger = get_child_logger(__file__)

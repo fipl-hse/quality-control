@@ -4,7 +4,6 @@ Check lint for code style in Python code.
 
 # pylint: disable=duplicate-code
 import argparse
-from logging518.config import fileConfig
 import os
 import re
 import sys
@@ -12,13 +11,11 @@ from os import listdir
 from pathlib import Path
 from typing import Optional
 
+from logging518.config import fileConfig
 from tap import Tap
 
-from quality_control.cli_unifier import (
-    _run_console_tool,
-    choose_python_exe,
-    handles_console_error,
-)
+from quality_control.cli_unifier import (_run_console_tool, choose_python_exe,
+                                         handles_console_error)
 from quality_control.console_logging import get_child_logger
 from quality_control.lab_settings import LabSettings
 from quality_control.project_config import ProjectConfig

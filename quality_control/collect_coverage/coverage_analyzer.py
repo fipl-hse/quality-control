@@ -7,12 +7,10 @@ from pathlib import Path
 from typing import Iterable, Mapping
 
 from logging518.config import fileConfig
+
 from quality_control.collect_coverage.run_coverage import (
-    CoverageCreateReportError,
-    CoverageRunError,
-    extract_percentage_from_report,
-    run_coverage_collection,
-)
+    CoverageCreateReportError, CoverageRunError,
+    extract_percentage_from_report, run_coverage_collection)
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
 from quality_control.lab_settings import LabSettings
@@ -27,7 +25,9 @@ CoverageResults = Mapping[
 ]
 
 
-def collect_coverage(root_dir: Path, all_labs_names: Iterable[Path], artifacts_path: Path) -> CoverageResults:
+def collect_coverage(
+    root_dir: Path, all_labs_names: Iterable[Path], artifacts_path: Path
+) -> CoverageResults:
     """
     Entrypoint for coverage collection for every required folder.
 
@@ -44,8 +44,10 @@ def collect_coverage(root_dir: Path, all_labs_names: Iterable[Path], artifacts_p
         try:
             check_target = True
             run_coverage_collection(
-                lab_path=lab_path, artifacts_path=artifacts_path, check_target_score=check_target,
-                root_dir=root_dir
+                lab_path=lab_path,
+                artifacts_path=artifacts_path,
+                check_target_score=check_target,
+                root_dir=root_dir,
             )
             report_path = artifacts_path / f"{lab_path.name}.json"
             percentage = extract_percentage_from_report(report_path)
@@ -80,7 +82,9 @@ def is_decrease_present(
             current_lab_percentage = 0
         diff = current_lab_percentage - prev_lab_percentage
 
-        logger.info(f'{lab_name:<30}: {current_lab_percentage}% ({"+" if diff >= 0 else ""}{diff})')
+        logger.info(
+            f'{lab_name:<30}: {current_lab_percentage}% ({"+" if diff >= 0 else ""}{diff})'
+        )
         labs_with_thresholds[lab_name] = current_lab_percentage
         if diff < 0:
             any_degradation = True
@@ -111,9 +115,8 @@ def main() -> None:
 
     coverage_thresholds = project_config.get_thresholds()
     all_labs_names = project_config.get_labs_paths(
-        include_addons=False,
-        root_dir=root_dir
-        )
+        include_addons=False, root_dir=root_dir
+    )
 
     not_skipped = []
     for lab_path in all_labs_names:
@@ -123,7 +126,9 @@ def main() -> None:
             continue
         not_skipped.append(lab_path)
 
-    all_labs_results = collect_coverage(root_dir=root_dir, all_labs_names=not_skipped, artifacts_path=artifacts_path)
+    all_labs_results = collect_coverage(
+        root_dir=root_dir, all_labs_names=not_skipped, artifacts_path=artifacts_path
+    )
 
     any_degradation, any_fallen_tests, labs_with_thresholds = is_decrease_present(
         all_labs_results, coverage_thresholds

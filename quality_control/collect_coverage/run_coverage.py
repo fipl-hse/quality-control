@@ -6,7 +6,8 @@ import json
 import pathlib
 from pathlib import Path
 
-from quality_control.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
+from quality_control.cli_unifier import (_run_console_tool, choose_python_exe,
+                                         handles_console_error)
 from quality_control.console_logging import get_child_logger
 from quality_control.lab_settings import LabSettings
 
@@ -83,12 +84,17 @@ def run_coverage_subprocess(
         "-m",
         f"{lab_path.name}{mark_label}",
     ]
-    return _run_console_tool(str(python_exe_path), args, debug=True, cwd=str(lab_path.parent))
+    return _run_console_tool(
+        str(python_exe_path), args, debug=True, cwd=str(lab_path.parent)
+    )
 
 
 @handles_console_error()
 def run_coverage_collection(
-    lab_path: Path, artifacts_path: Path, root_dir: Path, check_target_score: bool = True
+    lab_path: Path,
+    artifacts_path: Path,
+    root_dir: Path,
+    check_target_score: bool = True,
 ) -> tuple[str, str, int]:
     """
     Entrypoint for a single lab coverage collection.
@@ -113,4 +119,6 @@ def run_coverage_collection(
 
     report_path = artifacts_path / f"{lab_path.name}.json"
     args = ["-m", "coverage", "json", "-o", str(report_path)]
-    return _run_console_tool(str(python_exe_path), args, debug=True, cwd=str(lab_path.parent))
+    return _run_console_tool(
+        str(python_exe_path), args, debug=True, cwd=str(lab_path.parent)
+    )

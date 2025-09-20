@@ -7,10 +7,8 @@ from pathlib import Path
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
 from quality_control.generate_stubs.generator import cleanup_code
-from quality_control.generate_stubs.run_generator import (
-    format_stub_file,
-    sort_stub_imports,
-)
+from quality_control.generate_stubs.run_generator import (format_stub_file,
+                                                          sort_stub_imports)
 from quality_control.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)

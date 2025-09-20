@@ -4,10 +4,12 @@ Run start.
 
 from pathlib import Path
 
-from quality_control.cli_unifier import _run_console_tool, choose_python_exe, handles_console_error
+from logging518.config import fileConfig
+
+from quality_control.cli_unifier import (_run_console_tool, choose_python_exe,
+                                         handles_console_error)
 from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
-from logging518.config import fileConfig
 from quality_control.constants import PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
 from quality_control.static_checks.check_black import BlackArgumentsParser
@@ -27,7 +29,10 @@ def run_start(lab_name: str, root_dir: Path) -> tuple[str, str, int]:
         tuple[str, str, int]: stdout, stderr, exit code
     """
     return _run_console_tool(
-        str(choose_python_exe(lab_path=root_dir)), [str("start.py")], cwd=root_dir / lab_name, debug=True
+        str(choose_python_exe(lab_path=root_dir)),
+        [str("start.py")],
+        cwd=root_dir / lab_name,
+        debug=True,
     )
 
 

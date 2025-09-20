@@ -4,13 +4,14 @@ Module for PR name check.
 
 # pylint: skip-file
 import os
-from pathlib import Path
-from typing import Optional
-from logging518.config import fileConfig
-from tap import Tap
 import re
 import sys
+from pathlib import Path
 from re import Pattern
+from typing import Optional
+
+from logging518.config import fileConfig
+from tap import Tap
 
 from quality_control.console_logging import get_child_logger
 from quality_control.project_config import ProjectConfig
