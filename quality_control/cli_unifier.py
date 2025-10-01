@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from quality_control.console_logging import get_child_logger
-from quality_control.constants import CONFIG_PACKAGE_PATH
+from quality_control.constants import PROJECT_ROOT
 
 logger = get_child_logger(__file__)
 
@@ -40,7 +40,7 @@ def log_output(output_type: str, content: bytes | str) -> None:
         content(bytes | str): raw result from the subprocess call
     """
     with open(
-        str(Path(CONFIG_PACKAGE_PATH) / "assets" / "console_tool_log_template.txt"),
+        str(Path(PROJECT_ROOT) / "assets" / "console_tool_log_template.txt"),
         encoding="utf-8",
     ) as f:
         output_template = f.read()
@@ -69,7 +69,7 @@ def choose_python_exe(lab_path: str | None = None) -> Path:
     if platform.system() == "Windows":
         python_exe_path = Path(lab_path) / "venv" / "Scripts" / "python.exe"
     else:
-        python_exe_path = lab_path / "venv" / "bin" / "python"
+        python_exe_path = Path(lab_path) / "venv" / "bin" / "python"
     return python_exe_path
 
 
