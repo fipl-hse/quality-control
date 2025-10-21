@@ -28,7 +28,6 @@ logger = get_child_logger(__file__)
 
 
 class QualityControlLintArgumentsParser(QualityControlArgumentsParser):
-    repository_type: Optional[str] = None
     ignore_tests: bool = False
 
 
@@ -133,22 +132,6 @@ def check_lint_level(lint_output: str, target_score: int) -> bool:
     return is_passed(lint_output, target_lint_level)
 
 
-def parse_arguments() -> argparse.Namespace:
-    """
-    Parse command line arguments.
-
-    Returns:
-        argparse.Namespace: Parsed arguments.
-    """
-    parser = argparse.ArgumentParser(
-        description="Run check_lint.py checks for each lab."
-    )
-    parser.add_argument(
-        "--repository_type", help="Type of the repository (public/admin)"
-    )
-    return parser.parse_args()
-
-
 def main() -> None:
     """
     Run lint checks for the project.
@@ -192,12 +175,11 @@ def main() -> None:
             if target_score == 0:
                 logger.info("Skipping check")
                 continue
-            ignore_tests_value = args.ignore_tests or (args.repository_type=="public")
             logger.info(f"Running lint for lab {lab_path}")
             stdout, _, _ = check_lint_on_paths(
                 [lab_path],
                 toml_config,
-                ignore_tests=args.ignore_tests_value,
+                ignore_tests=args.ignore_tests,
                 exit_zero=True,
                 root_dir=root_dir,
             )
