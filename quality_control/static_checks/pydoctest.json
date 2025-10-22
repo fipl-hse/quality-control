@@ -1,6 +1,6 @@
 {
     "parser": "google",
-    "include_paths": [ "../../**/*.py" ],
+    "include_paths": [ "**/*.py" ],
     "exclude_paths": [
         "**/*_stub.py",
         "**/service.py",
