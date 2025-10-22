@@ -27,9 +27,6 @@ from quality_control.project_config import ProjectConfig
 logger = get_child_logger(__file__)
 
 
-class QualityControlLintArgumentsParser(QualityControlArgumentsParser):
-    ignore_tests: bool = False
-
 
 def transform_score_into_lint(target_score: int) -> int:
     """
@@ -136,7 +133,7 @@ def main() -> None:
     """
     Run lint checks for the project.
     """
-    args = QualityControlLintArgumentsParser(underscores_to_dashes=True).parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
