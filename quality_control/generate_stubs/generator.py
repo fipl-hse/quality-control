@@ -110,7 +110,7 @@ def cleanup_code(source_code_path: Path) -> str:
     elif (
         'lab_4_auto_completion' in str(source_code_path) and source_code_path.name == 'main.py'
     ):
-        accepted_modules["lab_3_generate_by_ngrams"] = [
+        accepted_modules["lab_3_generate_by_ngrams.main"] = [
             "TextProcessor"
         ]
     new_decl: list[stmt] = []
