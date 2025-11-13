@@ -107,7 +107,12 @@ def cleanup_code(source_code_path: Path) -> str:
             "Vector",
             "Vectorizer",
         ]
-
+    elif (
+        'lab_4_auto_completion' in str(source_code_path) and source_code_path.name == 'main.py'
+    ):
+        accepted_modules["lab_3_generate_by_ngrams"] = [
+            "TextProcessor"
+        ]
     new_decl: list[stmt] = []
 
     for decl_index, decl_2 in enumerate(data_2.body):
