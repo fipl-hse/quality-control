@@ -35,6 +35,7 @@ setup(
             "fiplconfig.check_requirements=quality_control.static_checks.check_requirements:main",
             "fiplconfig.check_spelling=quality_control.spellcheck.check_spelling:main",
             "fiplconfig.coverage_analyzer=quality_control.collect_coverage.coverage_analyzer:main",
+            "fiplconfig.sort_wordlist=quality_control.spellcheck.sort_wordlist:main",
             "fiplconfig.run_tests=quality_control.run_tests:main",
             "fiplconfig.run_start=quality_control.run_start:main",
         ]
