@@ -38,11 +38,11 @@ def main() -> None:
     root_dir = args.root_dir.resolve()
 
     pydoctest_path = (
-        (root_dir / "admin_utils" / "pydoctest.json")
+        (root_dir / "pydoctest.json")
         or (PROJECT_ROOT / "static_checks" / "pydoctest.json")
     ).resolve()
     if args.project_config_path:
-        pydoctest_path = args.project_config_path
+        pydoctest_path = args.project_config_path.resolve()
 
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
     fileConfig(toml_config)
