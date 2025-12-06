@@ -34,10 +34,11 @@ def main() -> None:
     Check docstrings for labs, config and core_utils packages.
     """
     args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
+
     root_dir = args.root_dir.resolve()
 
     pydoctest_path = (
-        (root_dir / "pydoctest.json")
+        (root_dir / "admin_utils" / "pydoctest.json")
         or (PROJECT_ROOT / "static_checks" / "pydoctest.json")
     ).resolve()
     if args.project_config_path:
