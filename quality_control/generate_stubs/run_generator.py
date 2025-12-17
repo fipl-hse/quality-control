@@ -21,7 +21,10 @@ logger = get_child_logger(__file__)
 
 @handles_console_error()
 def remove_implementation(
-    source_code_path: Path, res_stub_path: Path, root_dir: Path
+    source_code_path: Path,
+    res_stub_path: Path,
+    root_dir: Path,
+    project_config_path: Path,
 ) -> None:
     """
     Wrapper for implementation removal from a listing.
@@ -29,6 +32,8 @@ def remove_implementation(
     Args:
         source_code_path (Path): Path to source code
         res_stub_path (Path): Path to resulting stub
+        root_dir (Path): Root directory
+        project_config_path (Path): Path to project configuration file
     """
     stub_generator_path = Path(__file__).parent / "generator.py"
     args = [
@@ -37,6 +42,8 @@ def remove_implementation(
         str(source_code_path),
         "--target_code_path",
         str(res_stub_path),
+        "--project_config_path",
+        str(project_config_path),
     ]
     _run_console_tool(str(choose_python_exe(lab_path=root_dir)), args, debug=False)
 
@@ -48,6 +55,7 @@ def format_stub_file(res_stub_path: Path, root_dir: Path) -> tuple[str, str, int
 
     Args:
         res_stub_path (Path): Path to resulting path.
+        root_dir (Path): Root directory
 
     Returns:
         tuple[str, str, int]: stdout, stderr, exit code
@@ -83,9 +91,10 @@ def main() -> None:
 
     source_code_path = Path(args.source_code_path).absolute()
     res_stub_path = Path(args.target_code_path).absolute()
+    project_config_path = Path(args.project_config_path).absolute()
 
     try:
-        remove_implementation(source_code_path, res_stub_path)
+        remove_implementation(source_code_path, res_stub_path, project_config_path)
     except NoDocStringForAMethodError as e:
         logger.error(str(e))
         sys.exit(1)

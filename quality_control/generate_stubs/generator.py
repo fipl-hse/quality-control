@@ -3,7 +3,6 @@ Generator of stubs for existing lab implementation.
 """
 
 import ast
-import json
 from _ast import alias, stmt
 from pathlib import Path
 
@@ -11,6 +10,7 @@ import ast_comments
 from tap import Tap
 
 from quality_control.console_logging import get_child_logger
+from quality_control.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
 
@@ -19,20 +19,6 @@ class NoDocStringForAMethodError(Exception):
     """
     Error for a method that lacks docstring.
     """
-
-
-def load_config(config_path: Path) -> dict:
-    """
-    Load configuration from json file.
-
-    Args:
-        config_path: Path to config.
-
-    Returns:
-        dict: Configuration data.
-    """
-    with config_path.open('r', encoding='utf-8') as f:
-        return json.load(f)
 
 
 def remove_implementation_from_function(
@@ -77,27 +63,29 @@ def remove_implementation_from_function(
 
 
 # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-def cleanup_code(source_code_path: Path, config_path: Path) -> str:
+def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
     """
     Remove implementation based on AST parsing of code.
 
     Args:
         source_code_path (Path): Path to source code
-        config_path (Path): Path to stub config
+        project_config (ProjectConfig): Project configuration
 
     Returns:
         str: Implementation without AST parsing of code
     """
-    stub_config = load_config(config_path)
-    accepted_modules = stub_config["accepted_modules"].copy()
+    stub_config = project_config.get_stubs_config()
+    accepted_modules = stub_config.accepted_modules.copy()
 
-    file_rules = stub_config.get("specific_file_rules", {})
+    file_rules = stub_config.specific_file_rules
     filename = source_code_path.name
 
     if filename in file_rules:
         rule = file_rules[filename]
 
-        if "path_contains" in rule and rule["path_contains"] not in str(source_code_path):
+        if "path_contains" in rule and rule["path_contains"] not in str(
+            source_code_path
+        ):
             pass
         else:
             accepted_modules.update(rule.get("accepted_modules", {}))
@@ -210,7 +198,7 @@ class ArgumentParser(Tap):
 
     source_code_path: str
     target_code_path: str
-    stub_config_path: str
+    project_config_path: str
 
 
 def main() -> None:
@@ -222,7 +210,8 @@ def main() -> None:
     res_stub_path = Path(args.target_code_path)
     res_stub_path.parent.mkdir(parents=True, exist_ok=True)
 
-    source_code = cleanup_code(Path(args.source_code_path), Path(args.stub_config_path))
+    project_config = ProjectConfig(Path(args.project_config_path))
+    source_code = cleanup_code(Path(args.source_code_path), project_config)
 
     with res_stub_path.open(mode="w", encoding="utf-8") as file:
         logger.info(f"Writing to {res_stub_path}")
