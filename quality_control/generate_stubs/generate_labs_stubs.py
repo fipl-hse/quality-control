@@ -16,16 +16,20 @@ from quality_control.project_config import ProjectConfig
 logger = get_child_logger(__file__)
 
 
-def _generate_stubs_single_module(module_path: Path, root_dir: Path) -> None:
+def _generate_stubs_single_module(
+    module_path: Path, root_dir: Path, project_config: ProjectConfig
+) -> None:
     """
     Process single module.
 
     Args:
         module_path (Path): Path to module
+        root_dir (Path): Root directory
+        project_config (ProjectConfig): Project configuration
     """
     stub_path = module_path.parent / f"{module_path.stem}_stub{module_path.suffix}"
 
-    source_code = cleanup_code(module_path)
+    source_code = cleanup_code(module_path, project_config)
     with stub_path.open(mode="w", encoding="utf-8") as f:
         f.write(source_code)
     format_stub_file(stub_path, root_dir=root_dir)
@@ -39,21 +43,24 @@ def generate_all_stubs(project_config: ProjectConfig) -> None:
     Args:
         project_config (ProjectConfig): Project config
     """
-    labs = project_config.get_labs_names()
-    for lab_name in labs:
-        logger.info(f"Generating stubs for {lab_name}")
-        module_paths = (
-            PROJECT_ROOT / lab_name / "main.py",
-            PROJECT_ROOT / lab_name / "start.py",
-            PROJECT_ROOT / lab_name / "service.py",
-            PROJECT_ROOT / lab_name / "scraper.py",
-            PROJECT_ROOT / lab_name / "pipeline.py",
-        )
-        for module_path in module_paths:
-            if not module_path.exists():
-                continue
-            logger.info(f"{module_path}")
-            _generate_stubs_single_module(module_path, PROJECT_ROOT)
+    labs_config = project_config.get_labs_config()
+
+    for lab_conf in labs_config:
+        lab_name = lab_conf.name
+        stubs_list = lab_conf.stubs
+
+        if not stubs_list:
+            logger.info(
+                f"Skipping stub generation for {lab_name} - no special configuration."
+            )
+            continue
+
+        logger.info(f"Generating stubs for {lab_name}.")
+
+        for filename in stubs_list:
+            module_path = PROJECT_ROOT / lab_name / filename
+            logger.info(f"Processing file {filename} -> {module_path}")
+            _generate_stubs_single_module(module_path, PROJECT_ROOT, project_config)
 
 
 def main() -> None:
