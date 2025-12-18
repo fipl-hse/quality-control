@@ -86,7 +86,7 @@ def main() -> None:
         start_stub_code = get_code(start_stub_path)
         # service_stub_code = get_code(service_stub_path)
 
-        clean_main = cleanup_code(lab_path / "main.py")
+        clean_main = cleanup_code(lab_path / "main.py", project_config)
         example_main_stub_path = lab_path / "example_main_stub.py"
         with example_main_stub_path.open(mode="w", encoding="utf-8") as file:
             file.write(clean_main)
