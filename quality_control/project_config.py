@@ -238,4 +238,4 @@ class ProjectConfig(ProjectConfigDTO):
         Returns:
             StubsConfig: The stubs configuration object.
         """
-        return self._dto.stubs
+        return self._dto.stubs_config
