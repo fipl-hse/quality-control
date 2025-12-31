@@ -15,6 +15,7 @@ from quality_control.constants import PROJECT_ROOT
 
 # pylint: disable=no-name-in-module
 
+
 @dataclass
 class LabSettings:
     """
@@ -33,6 +34,7 @@ class Lab:
     name: str = field(default_factory=str)
     coverage: int = field(default_factory=int)
     settings: LabSettings | None = field(default_factory=LabSettings)
+    stubs: list[str] | None = None
 
 
 @dataclass
@@ -57,6 +59,16 @@ class Repository:
 
 
 @dataclass
+class StubConfig:
+    """
+    BaseModel for stubs configuration.
+    """
+
+    accepted_modules: dict[str, list[str]] = field(default_factory=dict)
+    specific_file_rules: dict[str, dict] = field(default_factory=dict)
+
+
+@dataclass
 class ProjectConfigDTO:
     """
     BaseModel for ProjectConfig.
@@ -65,6 +77,7 @@ class ProjectConfigDTO:
     labs: list[Lab] = field(default_factory=list[Lab])
     addons: list[Addon] = field(default_factory=list[Addon])
     repository: Repository = field(default_factory=Repository)
+    stubs_config: StubConfig = field(default_factory=StubConfig)
 
 
 class ProjectConfig(ProjectConfigDTO):
@@ -170,7 +183,9 @@ class ProjectConfig(ProjectConfigDTO):
         """
         for index, lab in enumerate(self._dto.labs):
             self._dto.labs[index] = Lab(
-                name=lab.name, coverage=new_thresholds.get(lab.name, lab.coverage)
+                name=lab.name,
+                coverage=new_thresholds.get(lab.name, lab.coverage),
+                stubs=lab.stubs,
             )
         for index, addon in enumerate(self._dto.addons):
             self._dto.addons[index] = Addon(
@@ -206,3 +221,21 @@ class ProjectConfig(ProjectConfigDTO):
             Lab | None: Configuration of lab
         """
         return next((lab for lab in self._dto.labs if lab.name == lab_name), None)
+
+    def get_labs_config(self) -> list[Lab]:
+        """
+        Returns the configuration for all labs.
+
+        Returns:
+            list[Lab]: A list of Lab objects.
+        """
+        return self._dto.labs
+
+    def get_stubs_config(self) -> StubConfig:
+        """
+        Returns the configuration for stubs.
+
+        Returns:
+            StubsConfig: The stubs configuration object.
+        """
+        return self._dto.stubs_config

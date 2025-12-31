@@ -86,7 +86,7 @@ def main() -> None:
         start_stub_code = get_code(start_stub_path)
         # service_stub_code = get_code(service_stub_path)
 
-        clean_main = cleanup_code(lab_path / "main.py")
+        clean_main = cleanup_code(lab_path / "main.py", project_config)
         example_main_stub_path = lab_path / "example_main_stub.py"
         with example_main_stub_path.open(mode="w", encoding="utf-8") as file:
             file.write(clean_main)
@@ -94,7 +94,7 @@ def main() -> None:
         sort_stub_imports(example_main_stub_path)
         formatted_main = get_code(example_main_stub_path)
 
-        clean_start = cleanup_code(lab_path / "start.py")
+        clean_start = cleanup_code(lab_path / "start.py", project_config)
         example_start_stub_path = lab_path / "example_start_stub.py"
         with example_start_stub_path.open(mode="w", encoding="utf-8") as file:
             file.write(clean_start)
@@ -102,7 +102,7 @@ def main() -> None:
         sort_stub_imports(example_start_stub_path)
         formatted_start = get_code(example_start_stub_path)
 
-        # clean_service = cleanup_code(lab_path / "service.py")
+        # clean_service = cleanup_code(lab_path / "service.py", project_config)
         # example_service_stub_path = lab_path / "example_service_stub.py"
         # with example_service_stub_path.open(mode="w", encoding="utf-8") as file:
         #     file.write(clean_service)
