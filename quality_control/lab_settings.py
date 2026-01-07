@@ -100,7 +100,7 @@ class LabSettingsModel:
     """
 
     target_score: int
-    parameters: CourseParameters | None = None
+    parameters: CtlrParameters | ParametersModel | None = None
 
 
 class LabSettings:
