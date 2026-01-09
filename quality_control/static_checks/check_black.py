@@ -45,7 +45,9 @@ def check_black_on_paths(
         str(toml_config_path),
         *[str(p) for p in paths if p.exists()],
     ]
-    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), black_args, debug=True, cwd=root_dir)
+    return _run_console_tool(
+        str(choose_python_exe(lab_path=root_dir)), black_args, debug=True, cwd=root_dir
+    )
 
 
 def main() -> None:

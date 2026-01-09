@@ -44,7 +44,9 @@ def check_doc8_on_paths(
         "--config",
         str(path_to_config),
     ]
-    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), doc8_args, debug=True, cwd=root_dir)
+    return _run_console_tool(
+        str(choose_python_exe(lab_path=root_dir)), doc8_args, debug=True, cwd=root_dir
+    )
 
 
 def main() -> None:

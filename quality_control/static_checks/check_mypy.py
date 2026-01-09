@@ -43,7 +43,9 @@ def check_mypy_on_paths(
         str(path_to_config),
     ]
 
-    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), mypy_args, debug=True, cwd=root_dir)
+    return _run_console_tool(
+        str(choose_python_exe(lab_path=root_dir)), mypy_args, debug=True, cwd=root_dir
+    )
 
 
 def main() -> None:
@@ -81,9 +83,7 @@ def main() -> None:
 
             if target_score > 7:
                 logger.info(f"Running mypy for lab {lab_path}")
-                check_mypy_on_paths(
-                    [lab_path], toml_config, root_dir=root_dir
-                )
+                check_mypy_on_paths([lab_path], toml_config, root_dir=root_dir)
 
 
 if __name__ == "__main__":

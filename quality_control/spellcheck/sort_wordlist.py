@@ -51,14 +51,15 @@ def main() -> None:
     Call functions.
     """
     args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
-    
+
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
     fileConfig(toml_config)
-    
-    main_wordlist_path = root_dir / "admin_utils" / "spellcheck"  / ".wordlist.txt"
-    secondary_wordlist_path = root_dir / "admin_utils" / "spellcheck"  / ".wordlist_en.txt"
 
+    main_wordlist_path = root_dir / "admin_utils" / "spellcheck" / ".wordlist.txt"
+    secondary_wordlist_path = (
+        root_dir / "admin_utils" / "spellcheck" / ".wordlist_en.txt"
+    )
 
     for current_path in (main_wordlist_path, secondary_wordlist_path):
         if current_path.exists():

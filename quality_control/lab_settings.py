@@ -10,6 +10,7 @@ from pydantic.dataclasses import dataclass
 
 # pylint: disable=no-name-in-module
 
+
 class Metrics(enum.Enum):
     """
     Metrics enum.
