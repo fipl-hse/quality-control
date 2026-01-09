@@ -70,9 +70,9 @@ class SFTParams:
     device: str
     finetuned_model_path: Path
     learning_rate: float
-    target_modules: list[str] | None = None
     rank: int
     alpha: int
+    target_modules: list[str] | None = None
 
 
 @dataclass
