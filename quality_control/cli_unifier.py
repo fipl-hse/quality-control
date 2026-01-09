@@ -56,14 +56,15 @@ def log_output(output_type: str, content: bytes | str) -> None:
     )
 
 
-def choose_python_exe() -> Path:
+def choose_python_exe(lab_path: str | None = None) -> Path:
     """
     Select python binary path depending on current OS.
 
     Returns:
         Path: A path to python exe
     """
-    lab_path = Path(__file__).parent.parent
+    if lab_path is None:
+        lab_path = Path(__file__).parent.parent
     if USE_VENV:
         if platform.system() == "Windows":
             python_exe_path = lab_path / "venv" / "Scripts" / "python.exe"
