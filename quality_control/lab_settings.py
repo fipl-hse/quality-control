@@ -71,8 +71,8 @@ class SFTParams:
     finetuned_model_path: Path
     learning_rate: float
     target_modules: list[str] | None = None
-    rank: int = 8
-    alpha: int = 16
+    rank: int
+    alpha: int
 
 
 @dataclass
