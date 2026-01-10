@@ -23,9 +23,7 @@ def get_paths(root_dir: Path) -> list[Path]:
     Returns:
         list[Path]: Paths to non-python files
     """
-    return [
-        path for path in root_dir.rglob("requirements*.txt") if "venv" not in str(path)
-    ]
+    return [path for path in root_dir.rglob("requirements*.txt") if "venv" not in str(path)]
 
 
 def get_requirements(path: Path) -> list:
@@ -71,13 +69,9 @@ def check_dependencies(lines: list, compiled_pattern: re.Pattern, path: Path) ->
         bool: Do dependencies confirm to the template or not
     """
     expected = [
-        i
-        for i in sorted(map(str.lower, lines))
-        if i.split()[0] not in ("--extra-index-url",)
+        i for i in sorted(map(str.lower, lines)) if i.split()[0] not in ("--extra-index-url",)
     ]
-    actual = [
-        i for i in map(str.lower, lines) if i.split()[0] not in ("--extra-index-url",)
-    ]
+    actual = [i for i in map(str.lower, lines) if i.split()[0] not in ("--extra-index-url",)]
     if expected != actual:
         expected_str = "\n".join(expected)
         logger.error(

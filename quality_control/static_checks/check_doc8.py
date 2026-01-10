@@ -2,6 +2,8 @@
 Check doc8 for style checking of rst files.
 """
 
+# pylint: disable=duplicate-code
+
 from pathlib import Path
 
 from logging518.config import fileConfig
@@ -50,13 +52,14 @@ def check_doc8_on_paths(
 
 
 def main() -> None:
+    """
+    Entrypoint for the module.
+    """
     args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)

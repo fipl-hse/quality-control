@@ -36,8 +36,7 @@ def remove_implementation_from_function(
 
     expr = original_declaration.body[0]
     if not isinstance(expr, ast.Expr) and (
-        not hasattr(expr, "value")
-        or not isinstance(getattr(expr, "value"), ast.Constant)
+        not hasattr(expr, "value") or not isinstance(getattr(expr, "value"), ast.Constant)
     ):
         raise NoDocStringForAMethodError(
             f"You have to provide docstring for a method "
@@ -83,9 +82,7 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
     if filename in file_rules:
         rule = file_rules[filename]
 
-        if "path_contains" in rule and rule["path_contains"] not in str(
-            source_code_path
-        ):
+        if "path_contains" in rule and rule["path_contains"] not in str(source_code_path):
             pass
         else:
             accepted_modules.update(rule.get("accepted_modules", {}))
@@ -104,10 +101,7 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
 
         if isinstance(decl_2, ast.ClassDef):
             for class_index, class_decl in enumerate(decl_2.body):
-                if (
-                    isinstance(class_decl, ast_comments.Comment)
-                    and "#: " in class_decl.value
-                ):
+                if isinstance(class_decl, ast_comments.Comment) and "#: " in class_decl.value:
                     data.body[decl_index].body.insert(class_index, class_decl)
 
     for decl in data.body:

@@ -56,9 +56,7 @@ def main() -> None:
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)
@@ -77,9 +75,7 @@ def main() -> None:
     for lab_name in labs_list:
         lab_path = root_dir / lab_name
         if "settings.json" in listdir(lab_path):
-            target_score = LabSettings(
-                root_dir / f"{lab_path}/settings.json"
-            ).target_score
+            target_score = LabSettings(root_dir / f"{lab_path}/settings.json").target_score
 
             if target_score > 7:
                 logger.info(f"Running mypy for lab {lab_path}")

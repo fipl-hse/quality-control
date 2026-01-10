@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any, Callable
 
 from quality_control.console_logging import get_child_logger
-
 from quality_control.constants import PROJECT_ROOT, USE_VENV
 
 logger = get_child_logger(__file__)
@@ -47,11 +46,7 @@ def log_output(output_type: str, content: bytes | str) -> None:
     logger.info(
         output_template.format(
             output_type=output_type,
-            content=(
-                convert_raw_output_to_str(content)
-                if isinstance(content, bytes)
-                else content
-            ),
+            content=(convert_raw_output_to_str(content) if isinstance(content, bytes) else content),
         )
     )
 
@@ -113,9 +108,7 @@ def modify_path(path: str) -> str:
     return modified_path
 
 
-def _run_console_tool(
-    exe: str, /, args: list[str], **kwargs: Any
-) -> tuple[str, str, int]:
+def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str, str, int]:
     """
     Run CLI commands.
 
@@ -152,9 +145,7 @@ def _run_console_tool(
     if env:
         result = subprocess.run(options, capture_output=True, check=True, env=env)
     elif kwargs.get("cwd"):
-        result = subprocess.run(
-            options, capture_output=True, check=True, cwd=kwargs.get("cwd")
-        )
+        result = subprocess.run(options, capture_output=True, check=True, cwd=kwargs.get("cwd"))
     else:
         result = subprocess.run(options, capture_output=True, check=True)
     return (

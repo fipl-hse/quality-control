@@ -2,22 +2,19 @@
 Generator of all labs.
 """
 
+# pylint: disable=duplicate-code
+
 from pathlib import Path
 
+from logging518.config import fileConfig
+
 from quality_control.console_logging import get_child_logger
-from quality_control.constants import PROJECT_CONFIG_PATH, PROJECT_ROOT
 from quality_control.generate_stubs.generator import cleanup_code
 from quality_control.generate_stubs.run_generator import (
     format_stub_file,
     sort_stub_imports,
 )
 from quality_control.project_config import ProjectConfig
-import re
-from pathlib import Path
-
-from logging518.config import fileConfig
-
-from quality_control.console_logging import get_child_logger
 from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
@@ -57,9 +54,7 @@ def generate_all_stubs(project_config: ProjectConfig, root_dir: Path) -> None:
         stubs_list = lab_conf.stubs
 
         if not stubs_list:
-            logger.info(
-                f"Skipping stub generation for {lab_name} - no special configuration."
-            )
+            logger.info(f"Skipping stub generation for {lab_name} - no special configuration.")
             continue
 
         logger.info(f"Generating stubs for {lab_name}.")
@@ -79,9 +74,7 @@ def main() -> None:
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     project_config = ProjectConfig(project_config_path)
 

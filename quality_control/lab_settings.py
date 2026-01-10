@@ -3,7 +3,6 @@ Settings manager.
 """
 
 import enum
-
 from pathlib import Path
 
 from pydantic.dataclasses import dataclass
@@ -122,9 +121,7 @@ class LabSettings:
         super().__init__()
         with config_path.open(encoding="utf-8") as config_file:
             # pylint: disable=no-member
-            self._dto = LabSettingsModel.__pydantic_validator__.validate_json(
-                config_file.read()
-            )
+            self._dto = LabSettingsModel.__pydantic_validator__.validate_json(config_file.read())
 
     @property
     def target_score(self) -> int:

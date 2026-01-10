@@ -2,13 +2,9 @@
 Run tests for each lab using pytest.
 """
 
-import os
 from pathlib import Path
-from typing import Optional
 
 from logging518.config import fileConfig
-from quality_control.quality_control_parser import QualityControlArgumentsParser
-from tap import Tap
 
 from quality_control.cli_unifier import (
     _run_console_tool,
@@ -18,6 +14,7 @@ from quality_control.cli_unifier import (
 from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
 from quality_control.project_config import ProjectConfig
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
@@ -116,9 +113,7 @@ def main() -> None:
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     fileConfig(toml_config)
 

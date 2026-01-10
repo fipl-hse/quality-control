@@ -118,11 +118,9 @@ class ProjectConfig(ProjectConfigDTO):
         Returns:
             list: Labs names
         """
-        return [lab.name for lab in self._dto.labs]
+        return sorted([lab.name for lab in self._dto.labs])
 
-    def get_labs_paths(
-        self, include_addons: bool = True, root_dir: Path = PROJECT_ROOT
-    ) -> list:
+    def get_labs_paths(self, include_addons: bool = True, root_dir: Path = PROJECT_ROOT) -> list:
         """
         Get labs paths.
 
