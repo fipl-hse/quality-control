@@ -85,6 +85,8 @@ class ProjectConfig(ProjectConfigDTO):
     Project Config implementation.
     """
 
+    _dto: ProjectConfigDTO
+
     def __init__(self, config_path: Path) -> None:
         """
         Initialize ProjectConfig.
@@ -135,6 +137,15 @@ class ProjectConfig(ProjectConfigDTO):
         if include_addons:
             labs_list.extend(self.get_addons_names())
         return [root_dir / lab for lab in labs_list]
+
+    def get_labs(self) -> list[Lab]:
+        """
+        Get the list of Lab objects from the configuration.
+
+        Returns:
+            list[Lab]: List of configured labs.
+        """
+        return self._dto.labs
 
     def get_addons_names(self) -> list:
         """
