@@ -12,7 +12,7 @@ from quality_control.constants import PROJECT_ROOT
 
 try:
     fileConfig(PROJECT_ROOT / "pyproject.toml")
-except KeyError:
+except FileNotFoundError:
     pass
 
 
