@@ -2,7 +2,6 @@
 Runner for generating and auto-formatting stubs.
 """
 
-import sys
 from pathlib import Path
 
 from quality_control.cli_unifier import (
@@ -11,10 +10,6 @@ from quality_control.cli_unifier import (
     handles_console_error,
 )
 from quality_control.console_logging import get_child_logger
-from quality_control.generate_stubs.generator import (
-    ArgumentParser,
-    NoDocStringForAMethodError,
-)
 
 logger = get_child_logger(__file__)
 
@@ -62,9 +57,7 @@ def format_stub_file(res_stub_path: Path, root_dir: Path) -> tuple[str, str, int
     """
     args = ["-m", "black", "-l", "100", str(res_stub_path)]
 
-    return _run_console_tool(
-        str(choose_python_exe(lab_path=root_dir)), args, debug=False
-    )
+    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), args, debug=False)
 
 
 @handles_console_error()
@@ -81,26 +74,3 @@ def sort_stub_imports(res_stub_path: Path) -> tuple[str, str, int]:
     args = [str(res_stub_path)]
 
     return _run_console_tool("isort", args, debug=False)
-
-
-def main() -> None:
-    """
-    Entrypoint for stub generation.
-    """
-    args = ArgumentParser().parse_args()
-
-    source_code_path = Path(args.source_code_path).absolute()
-    res_stub_path = Path(args.target_code_path).absolute()
-    project_config_path = Path(args.project_config_path).absolute()
-
-    try:
-        remove_implementation(source_code_path, res_stub_path, project_config_path)
-    except NoDocStringForAMethodError as e:
-        logger.error(str(e))
-        sys.exit(1)
-
-    format_stub_file(res_stub_path)
-
-
-if __name__ == "__main__":
-    main()

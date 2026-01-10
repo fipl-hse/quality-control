@@ -45,18 +45,21 @@ def check_black_on_paths(
         str(toml_config_path),
         *[str(p) for p in paths if p.exists()],
     ]
-    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), black_args, debug=True, cwd=root_dir)
+    return _run_console_tool(
+        str(choose_python_exe(lab_path=root_dir)), black_args, debug=True, cwd=root_dir
+    )
 
 
 def main() -> None:
+    """
+    Entrypoint for the module.
+    """
     args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     project_config = ProjectConfig(project_config_path)
 
@@ -67,9 +70,7 @@ def main() -> None:
     logger.info(f"Labs to check with black: {labs_list}")
     logger.info(f"Addons to check with black: {addons}")
 
-    all_paths = [root_dir / addon for addon in addons] + [
-        root_dir / lab for lab in labs_list
-    ]
+    all_paths = [root_dir / addon for addon in addons] + [root_dir / lab for lab in labs_list]
 
     check_black_on_paths(
         all_paths,

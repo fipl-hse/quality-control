@@ -43,7 +43,9 @@ def check_mypy_on_paths(
         str(path_to_config),
     ]
 
-    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), mypy_args, debug=True, cwd=root_dir)
+    return _run_console_tool(
+        str(choose_python_exe(lab_path=root_dir)), mypy_args, debug=True, cwd=root_dir
+    )
 
 
 def main() -> None:
@@ -54,9 +56,7 @@ def main() -> None:
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)
@@ -75,15 +75,11 @@ def main() -> None:
     for lab_name in labs_list:
         lab_path = root_dir / lab_name
         if "settings.json" in listdir(lab_path):
-            target_score = LabSettings(
-                root_dir / f"{lab_path}/settings.json"
-            ).target_score
+            target_score = LabSettings(root_dir / f"{lab_path}/settings.json").target_score
 
             if target_score > 7:
                 logger.info(f"Running mypy for lab {lab_path}")
-                check_mypy_on_paths(
-                    [lab_path], toml_config, root_dir=root_dir
-                )
+                check_mypy_on_paths([lab_path], toml_config, root_dir=root_dir)
 
 
 if __name__ == "__main__":

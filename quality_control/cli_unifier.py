@@ -11,11 +11,9 @@ from pathlib import Path
 from typing import Any, Callable
 
 from quality_control.console_logging import get_child_logger
-from quality_control.constants import PROJECT_ROOT
+from quality_control.constants import PROJECT_ROOT, USE_VENV
 
 logger = get_child_logger(__file__)
-
-BAD_OUTPUTS = ("", "0\n", "\r\n", "\r", b"0\r\n", "\n")
 
 
 def convert_raw_output_to_str(content: bytes) -> str:
@@ -48,11 +46,7 @@ def log_output(output_type: str, content: bytes | str) -> None:
     logger.info(
         output_template.format(
             output_type=output_type,
-            content=(
-                convert_raw_output_to_str(content)
-                if isinstance(content, bytes)
-                else content
-            ),
+            content=(convert_raw_output_to_str(content) if isinstance(content, bytes) else content),
         )
     )
 
@@ -66,10 +60,16 @@ def choose_python_exe(lab_path: str | None = None) -> Path:
     """
     if lab_path is None:
         lab_path = Path(__file__).parent.parent
-    if platform.system() == "Windows":
-        python_exe_path = Path(lab_path) / "venv" / "Scripts" / "python.exe"
+    if USE_VENV:
+        if platform.system() == "Windows":
+            python_exe_path = lab_path / "venv" / "Scripts" / "python.exe"
+        else:
+            python_exe_path = lab_path / "venv" / "bin" / "python"
     else:
-        python_exe_path = Path(lab_path) / "venv" / "bin" / "python"
+        if platform.system() == "Windows":
+            python_exe_path = Path("python.exe")
+        else:
+            python_exe_path = Path("python")
     return python_exe_path
 
 
@@ -108,9 +108,7 @@ def modify_path(path: str) -> str:
     return modified_path
 
 
-def _run_console_tool(
-    exe: str, /, args: list[str], **kwargs: Any
-) -> tuple[str, str, int]:
+def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str, str, int]:
     """
     Run CLI commands.
 
@@ -147,9 +145,7 @@ def _run_console_tool(
     if env:
         result = subprocess.run(options, capture_output=True, check=True, env=env)
     elif kwargs.get("cwd"):
-        result = subprocess.run(
-            options, capture_output=True, check=True, cwd=kwargs.get("cwd")
-        )
+        result = subprocess.run(options, capture_output=True, check=True, cwd=kwargs.get("cwd"))
     else:
         result = subprocess.run(options, capture_output=True, check=True)
     return (
@@ -197,16 +193,14 @@ def handles_console_error(
                 logger.info(f"Call to {func.__name__}")
                 stdout, stderr, return_code = func(*args, **kwargs)
             except subprocess.CalledProcessError as error:
-                logger.info(f"Exit code: {error.returncode}.\n")
-                if error.output and error.output not in BAD_OUTPUTS:
+                logger.info(f"Exit code: {error.returncode}.")
+                if error.output:
                     log_output("Console run stdout", error.output)
                 # return code is not 0, but sometimes it still can be OK
                 if error.returncode in ok_codes:
-                    logger.info(f"Exit code: {error.returncode}.\n")
-                    if error.output and error.output not in BAD_OUTPUTS:
-                        log_output("Console run stdout", error.output)
-                    if error.stderr and error.stderr not in BAD_OUTPUTS:
-                        log_output("Console run stderr", error.stderr)
+                    logger.info(f"Exit code: {error.returncode}.")
+                    log_output("Console run stdout", error.output)
+                    log_output("Console run stderr", error.stderr)
                     return (
                         convert_raw_output_to_str(error.output),
                         convert_raw_output_to_str(error.stderr),
@@ -214,13 +208,11 @@ def handles_console_error(
                     )
 
                 logger.error(f"Check failed with exit code {error.returncode}.")
-                if error.stderr and error.stderr not in BAD_OUTPUTS:
-                    log_output("Console run stderr", error.stderr)
+                log_output("Console run stderr", error.stderr)
                 sys.exit(exit_code_on_error)
             else:
-                logger.info(f"Exit code: {return_code}.\n")
-                if stdout and stdout not in BAD_OUTPUTS:
-                    log_output("Console run stdout", stdout)
+                logger.info(f"Exit code: {return_code}.")
+                log_output("Console run stdout", stdout)
                 return stdout, stderr, return_code
 
         return wrapper

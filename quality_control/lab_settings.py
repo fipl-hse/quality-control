@@ -3,12 +3,12 @@ Settings manager.
 """
 
 import enum
-
 from pathlib import Path
 
 from pydantic.dataclasses import dataclass
 
 # pylint: disable=no-name-in-module
+
 
 class Metrics(enum.Enum):
     """
@@ -69,6 +69,8 @@ class SFTParams:
     device: str
     finetuned_model_path: Path
     learning_rate: float
+    rank: int
+    alpha: int
     target_modules: list[str] | None = None
 
 
@@ -98,7 +100,7 @@ class LabSettingsModel:
     """
 
     target_score: int
-    parameters: CourseParameters | None = None
+    parameters: CtlrParameters | ParametersModel | None = None
 
 
 class LabSettings:
@@ -119,9 +121,7 @@ class LabSettings:
         super().__init__()
         with config_path.open(encoding="utf-8") as config_file:
             # pylint: disable=no-member
-            self._dto = LabSettingsModel.__pydantic_validator__.validate_json(
-                config_file.read()
-            )
+            self._dto = LabSettingsModel.__pydantic_validator__.validate_json(config_file.read())
 
     @property
     def target_score(self) -> int:
