@@ -45,7 +45,7 @@ class Addon:
 
     name: str = field(default_factory=str)
     coverage: int = field(default_factory=int)
-    needUML: bool = field(default_factory=False)
+    need_uml: bool = field(default_factory=False)
 
 
 @dataclass
@@ -156,7 +156,7 @@ class ProjectConfig(ProjectConfigDTO):
             list: Addons names
         """
         return [addon.name for addon in self._dto.addons]
-    
+
     def get_addons(self) -> list[Addon]:
         """
         Get the list of Addon objects from the configuration.
