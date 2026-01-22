@@ -47,7 +47,7 @@ def generate_all_stubs(project_config: ProjectConfig, root_dir: Path) -> None:
     Args:
         project_config (ProjectConfig): Project config
     """
-    labs_config = project_config.get_labs_config()
+    labs_config = project_config.get_labs()
 
     for lab_conf in labs_config:
         lab_name = lab_conf.name

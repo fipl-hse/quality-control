@@ -64,7 +64,6 @@ def main() -> None:
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)
 
-    labs_list = project_config.get_labs_paths(root_dir=root_dir)
 
     logger.info("Running doc8 for main docs")
     rst_main_files = list(root_dir.glob("*rst"))
@@ -84,6 +83,7 @@ def main() -> None:
         root_dir=root_dir,
     )
 
+    labs_list = project_config.get_labs_paths(root_dir=root_dir)
     for lab_name in labs_list:
         lab_path = root_dir / lab_name
         rst_labs_files = list(lab_path.rglob("*.rst"))

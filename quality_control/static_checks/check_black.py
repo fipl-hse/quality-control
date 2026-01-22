@@ -65,15 +65,15 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    labs_list = project_config.get_labs_paths(root_dir=root_dir)
-    addons = project_config.get_addons_names()
-    logger.info(f"Labs to check with black: {labs_list}")
-    logger.info(f"Addons to check with black: {addons}")
-
-    all_paths = [root_dir / addon for addon in addons] + [root_dir / lab for lab in labs_list]
-
+    logger.info(f"Labs to check with black: {project_config.get_labs_paths(root_dir=root_dir)}")
     check_black_on_paths(
-        all_paths,
+        project_config.get_labs_paths(root_dir=root_dir),
+        toml_config_path=toml_config,
+        root_dir=root_dir,
+    )
+    logger.info(f"Addons to check with black: {project_config.get_addons_paths(root_dir=root_dir),}")
+    check_black_on_paths(
+        project_config.get_addons_paths(root_dir=root_dir),
         toml_config_path=toml_config,
         root_dir=root_dir,
     )

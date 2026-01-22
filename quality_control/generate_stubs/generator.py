@@ -73,7 +73,7 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
     Returns:
         str: Implementation without AST parsing of code
     """
-    stub_config = project_config.get_stubs_config()
+    stub_config = project_config.get_stubs_names()
     accepted_modules = stub_config.accepted_modules.copy()
 
     file_rules = stub_config.specific_file_rules
