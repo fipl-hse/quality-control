@@ -2,7 +2,6 @@
 Module for PR name check.
 """
 
-# pylint: skip-file
 import os
 import re
 import sys
