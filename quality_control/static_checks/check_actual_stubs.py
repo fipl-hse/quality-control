@@ -70,7 +70,7 @@ def main() -> None:
                 code_is_equal = False
                 continue
 
-            base_name = impl_file[:-3]
+            base_name = impl_file.name
             stub_path = lab_path / f"{base_name}_stub.py"
 
             if not stub_path.exists():
