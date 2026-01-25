@@ -138,6 +138,15 @@ class ProjectConfig(ProjectConfigDTO):
         if include_addons:
             labs_list.extend(self.get_addons_names())
         return [root_dir / lab for lab in labs_list]
+    
+    def get_labs(self) -> list[Lab]:
+        """
+        Get the list of Lab objects from the configuration.
+
+        Returns:
+            list[Lab]: List of configured labs.
+        """
+        return self._dto.labs
 
     def get_addons_names(self) -> list:
         """
@@ -147,6 +156,15 @@ class ProjectConfig(ProjectConfigDTO):
             list: Addons names
         """
         return [addon.name for addon in self._dto.addons]
+    
+    def get_addons(self) -> list[Addon]:
+        """
+        Get the list of Addon objects from the configuration.
+
+        Returns:
+            list[Addon]: List of configured addons.
+        """
+        return self._dto.addons
 
     def get_admins(self) -> list[str]:
         """
