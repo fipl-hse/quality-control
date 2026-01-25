@@ -56,6 +56,12 @@ disable_error_code = [
     'union-attr',
 ]
 
+[[tool.mypy.overrides]]
+module = [
+    'ast_comments',
+]
+ignore_missing_imports = true
+
 [tool.logging]
 version = 1
 disable_existing_loggers = true

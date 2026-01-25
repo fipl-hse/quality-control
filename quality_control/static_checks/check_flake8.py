@@ -58,18 +58,12 @@ def main() -> None:
 
     fileConfig(toml_config)
 
+    addon_paths = project_config.get_addons_paths(root_dir=root_dir)
+    logger.info(f"Running flake8 on {' '.join(str(i) for i in addon_paths)}")
+    check_flake8_on_paths(addon_paths, root_dir=root_dir)
+
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
-    addons = project_config.get_addons_names()
-
-    logger.info(f"Running flake8 on {' '.join(addons)}")
-    check_flake8_on_paths([root_dir / addon for addon in addons], root_dir=root_dir)
-
-    if (root_dir / "core_utils").exists():
-        logger.info("core_utils exist")
-        check_flake8_on_paths([root_dir / "core_utils"], root_dir=root_dir)
-
-    for lab_name in labs_list:
-        lab_path = root_dir / lab_name
+    for lab_path in labs_list:
         if "settings.json" in listdir(lab_path):
             target_score = LabSettings(PROJECT_ROOT / f"{lab_path}/settings.json").target_score
 

@@ -114,7 +114,7 @@ def main() -> None:
     artifacts_path.mkdir(parents=True, exist_ok=True)
 
     coverage_thresholds = project_config.get_thresholds()
-    all_labs_names = project_config.get_labs_paths(include_addons=False, root_dir=root_dir)
+    all_labs_names = project_config.get_labs_paths(root_dir=root_dir)
 
     not_skipped = []
     for lab_path in all_labs_names:

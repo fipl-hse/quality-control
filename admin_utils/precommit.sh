@@ -25,7 +25,7 @@ isort "${DIRS_TO_CHECK[@]}"
 
 python -m pylint "${DIRS_TO_CHECK[@]}"
 
-# mypy "${DIRS_TO_CHECK[@]}"
+mypy "${DIRS_TO_CHECK[@]}"
 
 python -m flake8 "${DIRS_TO_CHECK[@]}"
 

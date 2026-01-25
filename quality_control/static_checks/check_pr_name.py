@@ -22,6 +22,7 @@ class CheckPrNameArguments(Tap):
     """
     Command-line arguments for PR name checking.
     """
+
     pr_name: str
     pr_author: str
     toml_config_path: Optional[Path] = None
