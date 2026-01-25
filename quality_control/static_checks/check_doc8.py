@@ -64,7 +64,6 @@ def main() -> None:
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)
 
-
     logger.info("Running doc8 for main docs")
     rst_main_files = list(root_dir.glob("*rst"))
     check_doc8_on_paths(

@@ -71,7 +71,9 @@ def main() -> None:
         toml_config_path=toml_config,
         root_dir=root_dir,
     )
-    logger.info(f"Addons to check with black: {project_config.get_addons_paths(root_dir=root_dir),}")
+    logger.info(
+        f"Addons to check with black: {project_config.get_addons_paths(root_dir=root_dir),}"
+    )
     check_black_on_paths(
         project_config.get_addons_paths(root_dir=root_dir),
         toml_config_path=toml_config,

@@ -155,7 +155,6 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-
     check_is_failed = False
 
     addons_paths = project_config.get_addons_paths(root_dir=root_dir)
