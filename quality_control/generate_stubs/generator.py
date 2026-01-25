@@ -50,7 +50,7 @@ def remove_implementation_from_function(
             opening_files.extend(original_declaration.body[1:])
 
         if isinstance(decl, ast.With) and decl not in opening_files:
-            if not ast.unparse(decl.items[0].context_expr.args):
+            if not ast.unparse(decl.items[0].context_expr.args):  # type: ignore
                 continue
             if "assets" in ast.unparse(decl.items[0].context_expr.args[0]):  # type: ignore
                 opening_files.append(decl)
@@ -102,7 +102,7 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
         if isinstance(decl_2, ast.ClassDef):
             for class_index, class_decl in enumerate(decl_2.body):
                 if isinstance(class_decl, ast_comments.Comment) and "#: " in class_decl.value:
-                    data.body[decl_index].body.insert(class_index, class_decl)
+                    data.body[decl_index].body.insert(class_index, class_decl)  # type: ignore
 
     for decl in data.body:
         if (
@@ -138,7 +138,7 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
                     continue
 
                 new_decl.append(
-                    ast.ImportFrom(
+                    ast.ImportFrom(  # type: ignore
                         module=module_name,
                         names=[alias(name=name.name) for name in names_to_import],
                     )

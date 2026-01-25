@@ -174,7 +174,7 @@ class ProjectConfig(ProjectConfigDTO):
         Returns:
             str: A json view of ProjectConfig
         """
-        return str(self._dto.model_dump_json(indent=4))
+        return str(self._dto.model_dump_json(indent=4))  # type: ignore
 
     def get_labs(self) -> list[Lab]:
         """

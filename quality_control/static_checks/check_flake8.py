@@ -58,8 +58,9 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    logger.info(f"Running flake8 on {' '.join(project_config.get_addons_paths(root_dir=root_dir))}")
-    check_flake8_on_paths(project_config.get_addons_paths(root_dir=root_dir), root_dir=root_dir)
+    addon_paths = project_config.get_addons_paths(root_dir=root_dir)
+    logger.info(f"Running flake8 on {' '.join(str(i) for i in addon_paths)}")
+    check_flake8_on_paths(addon_paths, root_dir=root_dir)
 
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
     for lab_path in labs_list:

@@ -63,7 +63,7 @@ def main() -> None:
 
     addons_paths = project_config.get_addons_paths(root_dir=root_dir)
     if addons_paths:
-        logger.info(f"Running mypy on {' '.join(addons_paths)}")
+        logger.info(f"Running mypy on {' '.join(str(i) for i in addons_paths)}")
         check_mypy_on_paths(
             addons_paths,
             toml_config,
