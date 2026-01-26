@@ -52,7 +52,7 @@ def main() -> None:
 
     for lab_path in labs_list:
         lab_name = lab_path.name
-        lab_config = project_config.get_lab_config(lab_name)
+        lab_config = project_config.get_lab(lab_name)
 
         if not lab_config:
             print(f"No config found for '{lab_name}'")

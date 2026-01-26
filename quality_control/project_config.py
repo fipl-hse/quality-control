@@ -43,7 +43,7 @@ class Addon:
 
     name: str = field(default_factory=str)
     coverage: int = field(default_factory=int)
-    need_uml: bool = field(default_factory=False)
+    need_uml: bool = False
     run_tests: bool = False
 
 
