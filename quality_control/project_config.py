@@ -80,7 +80,7 @@ class ProjectConfigDTO:
     stubs_config: Stub = field(default_factory=Stub)
 
 
-class ProjectConfig(ProjectConfigDTO):
+class ProjectConfig:
     """
     Project Config implementation.
     """
@@ -94,7 +94,6 @@ class ProjectConfig(ProjectConfigDTO):
         Args:
              config_path (Path): Path to config
         """
-        super().__init__()
         with config_path.open(encoding="utf-8", mode="r") as config_file:
             json_content = json.load(config_file)
         self._dto = TypeAdapter(ProjectConfigDTO).validate_python(json_content)
