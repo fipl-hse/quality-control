@@ -27,9 +27,7 @@ def get_code(code_path: Path) -> str:
     Returns:
         str: Clear code
     """
-    with code_path.open(encoding="utf-8") as file:
-        code_text = file.read()
-    return code_text
+    return code_path.read_text(encoding="utf-8")
 
 
 def main() -> None:
@@ -70,7 +68,7 @@ def main() -> None:
                 code_is_equal = False
                 continue
 
-            base_name = impl_file.name
+            base_name = Path(impl_file).stem
             stub_path = lab_path / f"{base_name}_stub.py"
 
             if not stub_path.exists():
