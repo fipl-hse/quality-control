@@ -2,7 +2,6 @@
 Module for PR name check.
 """
 
-# pylint: skip-file
 import os
 import re
 import sys
@@ -20,6 +19,10 @@ logger = get_child_logger(__file__)
 
 
 class CheckPrNameArguments(Tap):
+    """
+    Command-line arguments for PR name checking.
+    """
+
     pr_name: str
     pr_author: str
     toml_config_path: Optional[Path] = None
@@ -79,6 +82,9 @@ def is_author_admin(author_login: str, project_config: ProjectConfig) -> bool:
 
 
 def main() -> None:
+    """
+    Main entry point for PR name validation.
+    """
     args = CheckPrNameArguments().parse_args()
     root_dir = args.root_dir.resolve()
     project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()

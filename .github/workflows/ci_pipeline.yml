@@ -61,3 +61,19 @@ jobs:
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
           python -m flake8 quality_control
+
+  mypy-checks:
+    name: Static types checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [ install-dependencies ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup FIPL environment
+        uses: fipl-hse/setup-env-action@v0.11
+      - name: Flake8 check
+        run: |
+          source venv/bin/activate
+          export PYTHONPATH=$(pwd)
+          mypy quality_control

@@ -47,7 +47,7 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    labs_list = project_config.get_labs_paths(root_dir=root_dir, include_addons=False)
+    labs_list = project_config.get_labs_paths(root_dir=root_dir)
     code_is_equal = True
 
     for lab_path in labs_list:

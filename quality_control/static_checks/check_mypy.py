@@ -61,19 +61,18 @@ def main() -> None:
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)
 
-    labs_list = project_config.get_labs_paths(root_dir=root_dir)
-    addons = project_config.get_addons_names()
-
-    if addons:
-        logger.info(f"Running mypy on {' '.join(addons)}")
+    addons_paths = project_config.get_addons_paths(root_dir=root_dir)
+    if addons_paths:
+        logger.info(f"Running mypy on {' '.join(str(i) for i in addons_paths)}")
         check_mypy_on_paths(
-            [root_dir / addon for addon in addons],
+            addons_paths,
             toml_config,
             root_dir=root_dir,
         )
-    print(f"ROOT DIRI: {root_dir}")
-    for lab_name in labs_list:
-        lab_path = root_dir / lab_name
+    print(f"ROOT DIR: {root_dir}")
+
+    labs_list = project_config.get_labs_paths(root_dir=root_dir)
+    for lab_path in labs_list:
         if "settings.json" in listdir(lab_path):
             target_score = LabSettings(root_dir / f"{lab_path}/settings.json").target_score
 

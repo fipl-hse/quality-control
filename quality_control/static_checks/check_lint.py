@@ -155,24 +155,22 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    labs_list = project_config.get_labs_paths(root_dir=root_dir)
-    addons = project_config.get_addons_names()
-
     check_is_failed = False
 
-    if addons:
+    addons_paths = project_config.get_addons_paths(root_dir=root_dir)
+    if addons_paths:
         stdout, _, _ = check_lint_on_paths(
-            [root_dir / addon for addon in addons],
+            addons_paths,
             toml_config,
             exit_zero=True,
             root_dir=root_dir,
         )
         if not check_lint_level(stdout, 10):
-            logger.info(f"Running lint on {', '.join(addons)}")
+            logger.info(f"Running lint on {', '.join(addons_paths)} failed!")
             check_is_failed = True
 
-    for lab_name in labs_list:
-        lab_path = root_dir / lab_name
+    labs_list = project_config.get_labs_paths(root_dir=root_dir)
+    for lab_path in labs_list:
 
         if "settings.json" in listdir(lab_path):
             target_score = LabSettings(root_dir / f"{lab_path}/settings.json").target_score

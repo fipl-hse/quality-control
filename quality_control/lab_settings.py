@@ -2,12 +2,12 @@
 Settings manager.
 """
 
+# pylint: disable=no-member
+
 import enum
 from pathlib import Path
 
 from pydantic.dataclasses import dataclass
-
-# pylint: disable=no-name-in-module
 
 
 class Metrics(enum.Enum):
@@ -120,8 +120,8 @@ class LabSettings:
         """
         super().__init__()
         with config_path.open(encoding="utf-8") as config_file:
-            # pylint: disable=no-member
-            self._dto = LabSettingsModel.__pydantic_validator__.validate_json(config_file.read())
+            validator = LabSettingsModel.__pydantic_validator__  # type: ignore
+            self._dto = validator.validate_json(config_file.read())
 
     @property
     def target_score(self) -> int:
@@ -134,7 +134,7 @@ class LabSettings:
         return self._dto.target_score
 
     @property
-    def parameters(self) -> CourseParameters | None:
+    def parameters(self) -> CtlrParameters | ParametersModel | None:
         """
         Property for additional parameters.
 
@@ -151,4 +151,4 @@ class LabSettings:
         Returns:
             int | None: Project team identifier.
         """
-        return self._dto.parameters.ctlr.project_team
+        return int(self._dto.parameters.ctlr.project_team)
