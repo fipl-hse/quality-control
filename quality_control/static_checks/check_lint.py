@@ -166,7 +166,8 @@ def main() -> None:
             root_dir=root_dir,
         )
         if not check_lint_level(stdout, 10):
-            logger.info(f"Running lint on {', '.join(addons_paths)} failed!")
+            msg = ', '.join(str(i) for i in addons_paths)
+            logger.info(f"Running lint on {msg} failed!")
             check_is_failed = True
 
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
