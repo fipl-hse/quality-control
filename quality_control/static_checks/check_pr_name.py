@@ -2,7 +2,6 @@
 Module for PR name check.
 """
 
-# pylint: skip-file
 import os
 import re
 import sys
@@ -20,6 +19,10 @@ logger = get_child_logger(__file__)
 
 
 class CheckPrNameArguments(Tap):
+    """
+    Command-line arguments for PR name checking.
+    """
+
     pr_name: str
     pr_author: str
     toml_config_path: Optional[Path] = None
@@ -40,9 +43,7 @@ def convert_raw_pr_name(pr_name_raw: str) -> str:
     return pr_name_raw.replace("_", " ")
 
 
-def is_matching_name(
-    pr_name: str, compiled_pattern: Pattern, example_name: str
-) -> bool:
+def is_matching_name(pr_name: str, compiled_pattern: Pattern, example_name: str) -> bool:
     """
     Determine whether name is matching.
 
@@ -81,11 +82,12 @@ def is_author_admin(author_login: str, project_config: ProjectConfig) -> bool:
 
 
 def main() -> None:
+    """
+    Main entry point for PR name validation.
+    """
     args = CheckPrNameArguments().parse_args()
     root_dir = args.root_dir.resolve()
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
     project_config = ProjectConfig(project_config_path)

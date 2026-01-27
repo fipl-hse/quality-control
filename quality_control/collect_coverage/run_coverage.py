@@ -87,9 +87,7 @@ def run_coverage_subprocess(
         "-m",
         f"{lab_path.name}{mark_label}",
     ]
-    return _run_console_tool(
-        str(python_exe_path), args, debug=True, cwd=str(lab_path.parent)
-    )
+    return _run_console_tool(str(python_exe_path), args, debug=True, cwd=str(lab_path.parent))
 
 
 @handles_console_error()
@@ -122,6 +120,4 @@ def run_coverage_collection(
 
     report_path = artifacts_path / f"{lab_path.name}.json"
     args = ["-m", "coverage", "json", "-o", str(report_path)]
-    return _run_console_tool(
-        str(python_exe_path), args, debug=True, cwd=str(lab_path.parent)
-    )
+    return _run_console_tool(str(python_exe_path), args, debug=True, cwd=str(lab_path.parent))

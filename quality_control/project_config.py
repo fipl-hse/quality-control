@@ -13,7 +13,6 @@ from pydantic.dataclasses import dataclass
 
 from quality_control.constants import PROJECT_ROOT
 
-# pylint: disable=no-name-in-module
 
 @dataclass
 class LabSettings:
@@ -33,6 +32,7 @@ class Lab:
     name: str = field(default_factory=str)
     coverage: int = field(default_factory=int)
     settings: LabSettings | None = field(default_factory=LabSettings)
+    stubs: list[str] | None = None
 
 
 @dataclass
@@ -43,6 +43,8 @@ class Addon:
 
     name: str = field(default_factory=str)
     coverage: int = field(default_factory=int)
+    need_uml: bool = False
+    run_tests: bool = False
 
 
 @dataclass
@@ -57,6 +59,16 @@ class Repository:
 
 
 @dataclass
+class Stub:
+    """
+    BaseModel for stubs configuration.
+    """
+
+    accepted_modules: dict[str, list[str]] = field(default_factory=dict)
+    specific_file_rules: dict[str, dict] = field(default_factory=dict)
+
+
+@dataclass
 class ProjectConfigDTO:
     """
     BaseModel for ProjectConfig.
@@ -65,12 +77,15 @@ class ProjectConfigDTO:
     labs: list[Lab] = field(default_factory=list[Lab])
     addons: list[Addon] = field(default_factory=list[Addon])
     repository: Repository = field(default_factory=Repository)
+    stubs_config: Stub = field(default_factory=Stub)
 
 
 class ProjectConfig(ProjectConfigDTO):
     """
     Project Config implementation.
     """
+
+    _dto: ProjectConfigDTO
 
     def __init__(self, config_path: Path) -> None:
         """
@@ -92,47 +107,11 @@ class ProjectConfig(ProjectConfigDTO):
             dict: Labs thresholds
         """
         all_thresholds = {}
-        labs_thresholds = {lab.name: lab.coverage for lab in self._dto.labs}
-        addons_thresholds = {addon.name: addon.coverage for addon in self._dto.addons}
+        labs_thresholds = {lab.name: lab.coverage for lab in self.get_labs()}
+        addons_thresholds = {addon.name: addon.coverage for addon in self.get_addons()}
         all_thresholds.update(labs_thresholds)
         all_thresholds.update(addons_thresholds)
         return all_thresholds
-
-    def get_labs_names(self) -> list:
-        """
-        Get labs names.
-
-        Returns:
-            list: Labs names
-        """
-        return [lab.name for lab in self._dto.labs]
-
-    def get_labs_paths(
-        self, include_addons: bool = True, root_dir: Path = PROJECT_ROOT
-    ) -> list:
-        """
-        Get labs paths.
-
-        Args:
-            include_addons (bool): Include addons or not
-            root_dir (Path): Root path
-
-        Returns:
-            list: Paths to labs
-        """
-        labs_list = self.get_labs_names()
-        if include_addons:
-            labs_list.extend(self.get_addons_names())
-        return [root_dir / lab for lab in labs_list]
-
-    def get_addons_names(self) -> list:
-        """
-        Get addons names.
-
-        Returns:
-            list: Addons names
-        """
-        return [addon.name for addon in self._dto.addons]
 
     def get_admins(self) -> list[str]:
         """
@@ -168,11 +147,13 @@ class ProjectConfig(ProjectConfigDTO):
         Args:
             new_thresholds (dict[str, int]): Updated thresholds
         """
-        for index, lab in enumerate(self._dto.labs):
+        for index, lab in enumerate(self.get_labs()):
             self._dto.labs[index] = Lab(
-                name=lab.name, coverage=new_thresholds.get(lab.name, lab.coverage)
+                name=lab.name,
+                coverage=new_thresholds.get(lab.name, lab.coverage),
+                stubs=lab.stubs,
             )
-        for index, addon in enumerate(self._dto.addons):
+        for index, addon in enumerate(self.get_addons()):
             self._dto.addons[index] = Addon(
                 name=addon.name, coverage=new_thresholds.get(addon.name, addon.coverage)
             )
@@ -193,9 +174,18 @@ class ProjectConfig(ProjectConfigDTO):
         Returns:
             str: A json view of ProjectConfig
         """
-        return str(self._dto.model_dump_json(indent=4))
+        return str(self._dto.model_dump_json(indent=4))  # type: ignore
 
-    def get_lab_config(self, lab_name: str) -> Lab | None:
+    def get_labs(self) -> list[Lab]:
+        """
+        Get the list of Lab objects from the configuration.
+
+        Returns:
+            list[Lab]: List of configured labs.
+        """
+        return sorted(self._dto.labs, key=lambda x: x.name)
+
+    def get_lab(self, lab_name: str) -> Lab | None:
         """
         Returns configuration of the lab.
 
@@ -205,4 +195,47 @@ class ProjectConfig(ProjectConfigDTO):
         Returns:
             Lab | None: Configuration of lab
         """
-        return next((lab for lab in self._dto.labs if lab.name == lab_name), None)
+        return next((lab for lab in self.get_labs() if lab.name == lab_name), None)
+
+    def get_labs_paths(self, root_dir: Path = PROJECT_ROOT) -> list:
+        """
+        Get labs paths.
+
+        Args:
+            include_addons (bool): Include addons or not
+            root_dir (Path): Root path
+
+        Returns:
+            list: Paths to labs
+        """
+        return [root_dir / lab.name for lab in self.get_labs()]
+
+    def get_addons(self) -> list:
+        """
+        Get addons names.
+
+        Returns:
+            list: Addons names
+        """
+        return sorted(self._dto.addons, key=lambda x: x.name)
+
+    def get_addons_paths(self, root_dir: Path = PROJECT_ROOT) -> list:
+        """
+        Get addons paths.
+
+        Args:
+            root_dir (Path): Root path
+
+        Returns:
+            list: Paths to addons
+        """
+        return [root_dir / lab.name for lab in self.get_addons()]
+
+    def get_stubs_names(self) -> Stub:
+        """
+        Returns the configuration for stubs.
+
+        Returns:
+            StubsConfig: The stubs configuration object.
+        """
+        return self._dto.stubs_config

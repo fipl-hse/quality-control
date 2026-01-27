@@ -2,6 +2,8 @@
 Check doc8 for style checking of rst files.
 """
 
+# pylint: disable=duplicate-code
+
 from pathlib import Path
 
 from logging518.config import fileConfig
@@ -44,22 +46,23 @@ def check_doc8_on_paths(
         "--config",
         str(path_to_config),
     ]
-    return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), doc8_args, debug=True, cwd=root_dir)
+    return _run_console_tool(
+        str(choose_python_exe(lab_path=root_dir)), doc8_args, debug=True, cwd=root_dir
+    )
 
 
 def main() -> None:
+    """
+    Entrypoint for the module.
+    """
     args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     project_config = ProjectConfig(project_config_path)
     fileConfig(toml_config)
-
-    labs_list = project_config.get_labs_paths(root_dir=root_dir)
 
     logger.info("Running doc8 for main docs")
     rst_main_files = list(root_dir.glob("*rst"))
@@ -79,6 +82,7 @@ def main() -> None:
         root_dir=root_dir,
     )
 
+    labs_list = project_config.get_labs_paths(root_dir=root_dir)
     for lab_name in labs_list:
         lab_path = root_dir / lab_name
         rst_labs_files = list(lab_path.rglob("*.rst"))

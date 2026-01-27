@@ -44,6 +44,9 @@ def find_missing_inits(root_dir: Path, excluded_dirs: list[str]) -> list[Path]:
 
 
 def main() -> None:
+    """
+    Entrypoint for the module.
+    """
     args = InitArgumentsParser().parse_args()
     root_dir = args.root_dir.resolve()
 

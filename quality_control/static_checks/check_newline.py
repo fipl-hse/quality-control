@@ -37,9 +37,7 @@ def get_paths(root_dir: Path) -> list:
         "dist",
     }
 
-    only_sources = [
-        file for file in root_dir.iterdir() if file.name not in paths_to_exclude
-    ]
+    only_sources = [file for file in root_dir.iterdir() if file.name not in paths_to_exclude]
 
     list_with_paths = []
     for source_file in only_sources:

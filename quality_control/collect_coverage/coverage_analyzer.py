@@ -2,6 +2,8 @@
 Runner for collecting coverage.
 """
 
+# pylint: disable=duplicate-code
+
 import sys
 from pathlib import Path
 from typing import Iterable, Mapping
@@ -84,9 +86,7 @@ def is_decrease_present(
             current_lab_percentage = 0
         diff = current_lab_percentage - prev_lab_percentage
 
-        logger.info(
-            f'{lab_name:<30}: {current_lab_percentage}% ({"+" if diff >= 0 else ""}{diff})'
-        )
+        logger.info(f'{lab_name:<30}: {current_lab_percentage}% ({"+" if diff >= 0 else ""}{diff})')
         labs_with_thresholds[lab_name] = current_lab_percentage
         if diff < 0:
             any_degradation = True
@@ -104,9 +104,7 @@ def main() -> None:
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     project_config = ProjectConfig(project_config_path)
 
@@ -116,9 +114,7 @@ def main() -> None:
     artifacts_path.mkdir(parents=True, exist_ok=True)
 
     coverage_thresholds = project_config.get_thresholds()
-    all_labs_names = project_config.get_labs_paths(
-        include_addons=False, root_dir=root_dir
-    )
+    all_labs_names = project_config.get_labs_paths(root_dir=root_dir)
 
     not_skipped = []
     for lab_path in all_labs_names:

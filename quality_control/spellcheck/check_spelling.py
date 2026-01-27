@@ -29,7 +29,14 @@ def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
     Returns:
         tuple[str, str, int]: stdout, stderr, exit code
     """
-    spelling_args = ["-m", "pyspelling", "-c", f"{PROJECT_ROOT}/spellcheck/.spellcheck.yaml", "-n", task]
+    spelling_args = [
+        "-m",
+        "pyspelling",
+        "-c",
+        f"{PROJECT_ROOT}/spellcheck/.spellcheck.yaml",
+        "-n",
+        task,
+    ]
 
     return _run_console_tool(
         str(choose_python_exe(lab_path=root_dir)),
@@ -39,9 +46,7 @@ def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
     )
 
 
-def get_misspelled_from_stdout(
-    stdout: str, additional_re_check: Pattern | None = None
-) -> set[str]:
+def get_misspelled_from_stdout(stdout: str, additional_re_check: Pattern | None = None) -> set[str]:
     """
     Get words from the blocks of pyspelling output.
 
@@ -88,22 +93,16 @@ def main() -> None:
 
     stdout, _, return_code = check_spelling_on_paths(task="ru", root_dir=root_dir)
     missed_russian = (
-        set(get_misspelled_from_stdout(stdout, russian_word_p))
-        if return_code
-        else set()
+        set(get_misspelled_from_stdout(stdout, russian_word_p)) if return_code else set()
     )
 
     stdout, _, return_code = check_spelling_on_paths(task="en", root_dir=root_dir)
     missed_english = (
-        set(get_misspelled_from_stdout(stdout, english_word_p))
-        if return_code
-        else set()
+        set(get_misspelled_from_stdout(stdout, english_word_p)) if return_code else set()
     )
 
     stdout, _, return_code = check_spelling_on_paths(task="docstrings", root_dir=root_dir)
-    missed_docstrings = (
-        set(get_misspelled_from_stdout(stdout)) if return_code else set()
-    )
+    missed_docstrings = set(get_misspelled_from_stdout(stdout)) if return_code else set()
 
     if not missed_docstrings and not missed_russian and not missed_english:
         logger.info("Spelling: OK")

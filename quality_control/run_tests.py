@@ -2,13 +2,9 @@
 Run tests for each lab using pytest.
 """
 
-import os
 from pathlib import Path
-from typing import Optional
 
 from logging518.config import fileConfig
-from quality_control.quality_control_parser import QualityControlArgumentsParser
-from tap import Tap
 
 from quality_control.cli_unifier import (
     _run_console_tool,
@@ -18,6 +14,7 @@ from quality_control.cli_unifier import (
 from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
 from quality_control.project_config import ProjectConfig
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
@@ -54,7 +51,7 @@ def prepare_pytest_args(
         pytest_label = lab_path
 
     project_config = ProjectConfig(project_config_path)
-    lab_config = project_config.get_lab_config(lab_path)
+    lab_config = project_config.get_lab(lab_path)
 
     pytest_args = [
         "-m",
@@ -116,9 +113,7 @@ def main() -> None:
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     fileConfig(toml_config)
 
@@ -142,18 +137,17 @@ def main() -> None:
 
     else:
         project_config = ProjectConfig(project_config_path)
-        labs = project_config.get_labs_names()
 
-        logger.info(f"Current scope: {labs}")
+        logger.info(f"Current scope: {project_config.get_labs()}")
 
-        for lab_name in labs:
-            if check_skip(root_dir=root_dir, lab_path=lab_name):
+        for lab in project_config.get_labs():
+            if check_skip(root_dir=root_dir, lab_path=lab.name):
                 continue
-            logger.info(f"Running tests for lab {lab_name}")
+            logger.info(f"Running tests for lab {lab.name}")
 
-            target_score = get_target_score(root_dir / lab_name)
+            target_score = get_target_score(root_dir / lab.name)
             pytest_args = prepare_pytest_args(
-                lab_path=lab_name,
+                lab_path=lab.name,
                 target_score=target_score,
                 project_config_path=project_config_path,
             )
@@ -162,8 +156,20 @@ def main() -> None:
             if return_code == 5:
                 logger.info(
                     f"This combination of mark and label "
-                    f"doesn't match any tests for {lab_name}."
+                    f"doesn't match any tests for {lab.name}."
                 )
+
+        for addon in project_config.get_addons():
+            if not addon.run_tests:
+                logger.info(f"Addon {addon.name} does not need to run tests")
+
+            logger.info(f"Running tests for addon {addon.name}")
+
+            pytest_args = prepare_pytest_args(
+                lab_path=addon.name,
+                target_score=10,
+                project_config_path=project_config_path,
+            )
 
 
 if __name__ == "__main__":

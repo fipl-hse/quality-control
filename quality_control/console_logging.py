@@ -2,7 +2,7 @@
 Root logger configuration etc.
 """
 
-from logging import Logger, getLogger
+from logging import getLogger, Logger
 from os.path import sep
 from pathlib import Path
 
@@ -12,7 +12,7 @@ from quality_control.constants import PROJECT_ROOT
 
 try:
     fileConfig(PROJECT_ROOT / "pyproject.toml")
-except Exception as e:
+except FileNotFoundError:
     pass
 
 

@@ -10,6 +10,7 @@ import ast_comments
 from tap import Tap
 
 from quality_control.console_logging import get_child_logger
+from quality_control.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
 
@@ -35,8 +36,7 @@ def remove_implementation_from_function(
 
     expr = original_declaration.body[0]
     if not isinstance(expr, ast.Expr) and (
-        not hasattr(expr, "value")
-        or not isinstance(getattr(expr, "value"), ast.Constant)
+        not hasattr(expr, "value") or not isinstance(getattr(expr, "value"), ast.Constant)
     ):
         raise NoDocStringForAMethodError(
             f"You have to provide docstring for a method "
@@ -50,7 +50,7 @@ def remove_implementation_from_function(
             opening_files.extend(original_declaration.body[1:])
 
         if isinstance(decl, ast.With) and decl not in opening_files:
-            if not ast.unparse(decl.items[0].context_expr.args):
+            if not ast.unparse(decl.items[0].context_expr.args):  # type: ignore
                 continue
             if "assets" in ast.unparse(decl.items[0].context_expr.args[0]):  # type: ignore
                 opening_files.append(decl)
@@ -62,57 +62,37 @@ def remove_implementation_from_function(
 
 
 # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-def cleanup_code(source_code_path: Path) -> str:
+def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
     """
     Remove implementation based on AST parsing of code.
 
     Args:
         source_code_path (Path): Path to source code
+        project_config (ProjectConfig): Project configuration
 
     Returns:
         str: Implementation without AST parsing of code
     """
+    stub_config = project_config.get_stubs_names()
+    accepted_modules = stub_config.accepted_modules.copy()
+
+    file_rules = stub_config.specific_file_rules
+    filename = source_code_path.name
+
+    if filename in file_rules:
+        rule = file_rules[filename]
+
+        if "path_contains" in rule and rule["path_contains"] not in str(source_code_path):
+            pass
+        else:
+            accepted_modules.update(rule.get("accepted_modules", {}))
+
     with source_code_path.open(encoding="utf-8") as file:
         data = ast.parse(file.read(), source_code_path.name, type_comments=True)
 
     with source_code_path.open(encoding="utf-8") as file:
         data_2 = ast_comments.parse(file.read(), source_code_path.name)
 
-    accepted_modules: dict[str, list[str]] = {
-        "typing": ["*"],
-        "pathlib": ["Path"],
-        "json": ["load"],
-    }
-
-    if source_code_path.name == "pipeline.py":
-        accepted_modules["networkx"] = ["DiGraph"]
-        accepted_modules["core_utils.pipeline"] = [
-            "PipelineProtocol",
-            "LibraryWrapper",
-            "AbstractCoNLLUAnalyzer",
-            "UDPipeDocument",
-            "StanzaDocument",
-            "CoNLLUDocument",
-            "TreeNode",
-            "UnifiedCoNLLUDocument",
-        ]
-        accepted_modules["core_utils.article.article"] = ["Article"]
-    elif (
-        "lab_4_retrieval_w_clustering" in str(source_code_path)
-        and source_code_path.name == "main.py"
-    ):
-        accepted_modules["lab_3_ann_retriever.main"] = [
-            "BasicSearchEngine",
-            "Tokenizer",
-            "Vector",
-            "Vectorizer",
-        ]
-    elif (
-        'lab_4_auto_completion' in str(source_code_path) and source_code_path.name == 'main.py'
-    ):
-        accepted_modules["lab_3_generate_by_ngrams.main"] = [
-            "TextProcessor", "NGramLanguageModel", "BackOffGenerator"
-        ]
     new_decl: list[stmt] = []
 
     for decl_index, decl_2 in enumerate(data_2.body):
@@ -121,11 +101,8 @@ def cleanup_code(source_code_path: Path) -> str:
 
         if isinstance(decl_2, ast.ClassDef):
             for class_index, class_decl in enumerate(decl_2.body):
-                if (
-                    isinstance(class_decl, ast_comments.Comment)
-                    and "#: " in class_decl.value
-                ):
-                    data.body[decl_index].body.insert(class_index, class_decl)
+                if isinstance(class_decl, ast_comments.Comment) and "#: " in class_decl.value:
+                    data.body[decl_index].body.insert(class_index, class_decl)  # type: ignore
 
     for decl in data.body:
         if (
@@ -135,13 +112,12 @@ def cleanup_code(source_code_path: Path) -> str:
         ):
             decl = []  # type: ignore
 
-        if source_code_path.name == "service.py" and isinstance(decl, ast.Assign):
-            if source_code_path.parent.name == "lab_7_llm":
-                decl = ast.parse("app, pipeline = None, None")  # type: ignore
-            elif source_code_path.parent.name == "lab_8_sft":
-                decl = ast.parse(  # type: ignore
-                    "app, pre_trained_pipeline, fine_tuned_pipeline = None, None, None"
-                )
+        if filename == "service.py" and isinstance(decl, ast.Assign):
+            parent_dir = source_code_path.parent.name
+            service_rules = file_rules.get("service.py", {}).get("replacement", {})
+            if parent_dir in service_rules:
+                replacement_code = service_rules[parent_dir]
+                decl = ast.parse(replacement_code)  # type: ignore
 
         if isinstance(decl, (ast.Import, ast.ImportFrom)):
             if (module_name := getattr(decl, "module", None)) is None:
@@ -162,7 +138,7 @@ def cleanup_code(source_code_path: Path) -> str:
                     continue
 
                 new_decl.append(
-                    ast.ImportFrom(
+                    ast.ImportFrom(  # type: ignore
                         module=module_name,
                         names=[alias(name=name.name) for name in names_to_import],
                     )
@@ -216,6 +192,7 @@ class ArgumentParser(Tap):
 
     source_code_path: str
     target_code_path: str
+    project_config_path: str
 
 
 def main() -> None:
@@ -227,7 +204,8 @@ def main() -> None:
     res_stub_path = Path(args.target_code_path)
     res_stub_path.parent.mkdir(parents=True, exist_ok=True)
 
-    source_code = cleanup_code(Path(args.source_code_path))
+    project_config = ProjectConfig(Path(args.project_config_path))
+    source_code = cleanup_code(Path(args.source_code_path), project_config)
 
     with res_stub_path.open(mode="w", encoding="utf-8") as file:
         logger.info(f"Writing to {res_stub_path}")

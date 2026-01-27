@@ -1,0 +1,79 @@
+name: "Check PR"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.ref }}-public
+  cancel-in-progress: true
+
+env:
+  REPOSITORY_TYPE: admin
+
+jobs:
+  install-dependencies:
+    name: Installing dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup FIPL environment
+        uses: fipl-hse/setup-env-action@v0.11
+      - name: Confirming everything is OK
+        run: |
+          ls -la venv
+
+  code-style:
+    name: Code Style
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [ install-dependencies ]
+    env:
+      PR_NAME: ${{ github.event.pull_request.title }}
+      PR_AUTHOR: ${{ github.actor }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup FIPL environment
+        uses: fipl-hse/setup-env-action@v0.11
+      - name: Code Style
+        run: |
+          source venv/bin/activate
+          export PYTHONPATH=$(pwd)
+          python -m pylint quality_control
+
+  flake8-checks:
+    name: Import style checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [ install-dependencies ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup FIPL environment
+        uses: fipl-hse/setup-env-action@v0.11
+      - name: Flake8 check
+        run: |
+          source venv/bin/activate
+          export PYTHONPATH=$(pwd)
+          python -m flake8 quality_control
+
+  mypy-checks:
+    name: Static types checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [ install-dependencies ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup FIPL environment
+        uses: fipl-hse/setup-env-action@v0.11
+      - name: Flake8 check
+        run: |
+          source venv/bin/activate
+          export PYTHONPATH=$(pwd)
+          mypy quality_control

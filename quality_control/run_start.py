@@ -75,28 +75,25 @@ def main() -> None:
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
-    project_config_path = (
-        args.project_config_path or (root_dir / "project_config.json")
-    ).resolve()
+    project_config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     project_config = ProjectConfig(project_config_path)
 
     fileConfig(toml_config)
-    labs = project_config.get_labs_names()
 
-    for lab_name in labs:
-        logger.info(f"Running start.py checks for lab {lab_name}")
+    for lab in project_config.get_labs():
+        logger.info(f"Running start.py checks for lab {lab.name}")
 
-        target_score = get_target_score(root_dir / lab_name)
+        target_score = get_target_score(root_dir / lab.name)
 
         if target_score == 0:
             logger.info("Skipping stage. Target score is 0.")
             continue
-        run_start(lab_name, root_dir=root_dir)
+        run_start(lab.name, root_dir=root_dir)
 
-        logger.info(f"Check calling lab {lab_name} passed")
+        logger.info(f"Check calling lab {lab.name} passed")
 
-        check_start_content(lab_name, root_dir)
+        check_start_content(lab.name, root_dir)
 
     logger.info("All start.py checks passed.")
 
