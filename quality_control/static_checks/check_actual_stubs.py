@@ -27,24 +27,7 @@ def get_code(code_path: Path) -> str:
     Returns:
         str: Clear code
     """
-    with code_path.open(encoding="utf-8") as file:
-        code_text = file.read()
-    return code_text
-
-
-def clear_examples(lab_path: Path) -> None:
-    """
-    Clean temp files.
-
-    Args:
-        lab_path (Path): Path to temp files
-    """
-    example_main_stub_path = lab_path / "example_main_stub.py"
-    example_start_stub_path = lab_path / "example_start_stub.py"
-    # example_service_stub_path = lab_path / "example_service_stub.py"
-    example_start_stub_path.unlink()
-    example_main_stub_path.unlink()
-    # example_service_stub_path.unlink()
+    return code_path.read_text(encoding="utf-8")
 
 
 def main() -> None:
@@ -64,63 +47,51 @@ def main() -> None:
 
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
     code_is_equal = True
+
     for lab_path in labs_list:
-        print(f"Processing {lab_path}...")
-        main_stub_path = lab_path / "main_stub.py"
-        start_stub_path = lab_path / "start_stub.py"
-        # service_stub_path = lab_path / "service_stub.py"
-        # if (
-        #     not main_stub_path.exists()
-        #     or not start_stub_path.exists()
-        #     or not service_stub_path.exists()
-        # ):
-        #     print(
-        #         f"Ignoring {main_stub_path} or {start_stub_path} or {service_stub_path}: "
-        #         f"do not exist"
-        #     )
-        #     continue
+        lab_name = lab_path.name
+        lab_config = project_config.get_lab(lab_name)
 
-        main_stub_code = get_code(main_stub_path)
-        start_stub_code = get_code(start_stub_path)
-        # service_stub_code = get_code(service_stub_path)
+        if not lab_config:
+            print(f"No config found for '{lab_name}'")
+            continue
 
-        clean_main = cleanup_code(lab_path / "main.py", project_config)
-        example_main_stub_path = lab_path / "example_main_stub.py"
-        with example_main_stub_path.open(mode="w", encoding="utf-8") as file:
-            file.write(clean_main)
-        format_stub_file(example_main_stub_path, root_dir=root_dir)
-        sort_stub_imports(example_main_stub_path)
-        formatted_main = get_code(example_main_stub_path)
+        if not lab_config.stubs:
+            print(f"No stubs defined for '{lab_name}', skipping")
+            continue
 
-        clean_start = cleanup_code(lab_path / "start.py", project_config)
-        example_start_stub_path = lab_path / "example_start_stub.py"
-        with example_start_stub_path.open(mode="w", encoding="utf-8") as file:
-            file.write(clean_start)
-        format_stub_file(example_start_stub_path, root_dir=root_dir)
-        sort_stub_imports(example_start_stub_path)
-        formatted_start = get_code(example_start_stub_path)
+        for impl_file in lab_config.stubs:
+            impl_path = lab_path / impl_file
 
-        # clean_service = cleanup_code(lab_path / "service.py", project_config)
-        # example_service_stub_path = lab_path / "example_service_stub.py"
-        # with example_service_stub_path.open(mode="w", encoding="utf-8") as file:
-        #     file.write(clean_service)
-        # format_stub_file(example_service_stub_path)
-        # sort_stub_imports(example_service_stub_path)
-        # formatted_service = get_code(example_service_stub_path)
+            if not impl_path.exists():
+                print(f"Missing implementation file: {impl_path}")
+                code_is_equal = False
+                continue
 
-        if formatted_main != main_stub_code:
-            code_is_equal = False
-            print(f"You have different main and main_stub in {lab_path}")
+            base_name = Path(impl_file).stem
+            stub_path = lab_path / f"{base_name}_stub.py"
 
-        if formatted_start != start_stub_code:
-            code_is_equal = False
-            print(f"You have different start and start_stub in {lab_path}")
+            if not stub_path.exists():
+                print(f"Missing stub file: {stub_path}")
+                code_is_equal = False
+                continue
 
-        # if formatted_service != service_stub_code:
-        #     code_is_equal = False
-        #     print(f"You have different service and service_stub in {lab_path}")
+            clean_code = cleanup_code(impl_path, project_config)
+            example_stub_path = lab_path / f"example_{base_name}_stub.py"
+            with example_stub_path.open(mode="w", encoding="utf-8") as f:
+                f.write(clean_code)
 
-        clear_examples(lab_path)
+            format_stub_file(example_stub_path, root_dir=root_dir)
+            sort_stub_imports(example_stub_path)
+            expected_code = get_code(example_stub_path)
+            example_stub_path.unlink()
+
+            current_code = get_code(stub_path)
+
+            if expected_code != current_code:
+                print(f"Stub mismatch: {impl_file} content differs from {stub_path.name}")
+                code_is_equal = False
+
     if code_is_equal:
         print("All stubs are relevant")
     sys.exit(not code_is_equal)
