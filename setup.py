@@ -39,6 +39,7 @@ setup(
             "fiplconfig.generate_labs_stubs=quality_control.generate_stubs.generate_labs_stubs:main",
             "fiplconfig.run_tests=quality_control.run_tests:main",
             "fiplconfig.run_start=quality_control.run_start:main",
+            "fiplconfig.update_forks=quality_control.github.update_forks:main",
         ]
     },
     long_description=(Path(__file__).parent / "README.md").read_text(encoding="utf-8"),
