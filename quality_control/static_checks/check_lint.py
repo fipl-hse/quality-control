@@ -30,8 +30,6 @@ class QualityControlLintArgumentsParser(QualityControlArgumentsParser):
     CLI for lint checks.
     """
 
-    repository_type: Optional[str] = None
-
 
 def transform_score_into_lint(target_score: int) -> int:
     """
@@ -128,18 +126,6 @@ def check_lint_level(lint_output: str, target_score: int) -> bool:
     return is_passed(lint_output, target_lint_level)
 
 
-def parse_arguments() -> argparse.Namespace:
-    """
-    Parse command line arguments.
-
-    Returns:
-        argparse.Namespace: Parsed arguments.
-    """
-    parser = argparse.ArgumentParser(description="Run check_lint.py checks for each lab.")
-    parser.add_argument("--repository_type", help="Type of the repository (public/admin)")
-    return parser.parse_args()
-
-
 def main() -> None:
     """
     Run lint checks for the project.
@@ -166,7 +152,7 @@ def main() -> None:
             root_dir=root_dir,
         )
         if not check_lint_level(stdout, 10):
-            msg = ', '.join(str(i) for i in addons_paths)
+            msg = ", ".join(str(i) for i in addons_paths)
             logger.info(f"Running lint on {msg} failed!")
             check_is_failed = True
 
@@ -183,7 +169,7 @@ def main() -> None:
             stdout, _, _ = check_lint_on_paths(
                 [lab_path],
                 toml_config,
-                ignore_tests=args.repository_type == "public",
+                ignore_tests=False,
                 exit_zero=True,
                 root_dir=root_dir,
             )
