@@ -47,7 +47,7 @@ def update_fork(
         tuple[str, str, int]: stdout, stderr, exit code
     """
     args = [
-        str(CONFIG_PACKAGE_PATH / "github" / "update_fork.py"),
+        str(PROJECT_ROOT / "github" / "update_fork.py"),
         "--fork",
         repositories["fork"],
         "--strategy",
@@ -116,7 +116,7 @@ def main() -> None:
     with args.config.open() as configuration_file:
         configuration = json.load(configuration_file)
 
-    python_exe_path = choose_python_exe(lab_path=PROJECT_ROOT)
+    python_exe_path = choose_python_exe(lab_path=root_dir)
     authentication = configuration["authentication"]
     upstream = configuration["upstream"]
 
