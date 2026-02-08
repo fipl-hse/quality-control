@@ -12,8 +12,6 @@ from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_ROOT
 from quality_control.quality_control_parser import QualityControlArgumentsParser
 
-from admin_utils.constants import CONFIG_PACKAGE_PATH
-
 logger = get_child_logger(__file__)
 
 
@@ -107,7 +105,7 @@ def main() -> None:
         configuration_path (Path): Path to json configuration
     """
     args = CommandLineInterface(underscores_to_dashes=True).parse_args()
-    
+
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
