@@ -5,41 +5,34 @@ on:
     branches:
       - main
 
-env:
-  DEFAULT_PYTHON: "3.12"
-
 permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build and upload release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+  tag-and-release:
+  runs-on: ubuntu-latest
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+  steps:
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          python-version: ${{ env.DEFAULT_PYTHON }}
+          fetch-depth: 0
 
-      - name: Install build tool
-        run: python -m pip install --upgrade pip build
-
-      - name: Determine version
-        id: version
+      - name: Get version
+        id: get_version
         run: |
-          TAG=$(git describe --tags --abbrev=0 || echo "v0.1.0")
-          echo "VERSION=$TAG" >> $GITHUB_ENV
-          echo "Version to release: $TAG"
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Build distributions
-        run: python -m build
+      - name: Create tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag v${{ steps.get_version.outputs.version }}
+          git push origin v${{ steps.get_version.outputs.version }}
 
-      - name: Create GitHub Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.VERSION }}
-          name: "Release ${{ env.VERSION }}"
-          files: dist/*
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Release v${{ steps.get_version.outputs.version }}
