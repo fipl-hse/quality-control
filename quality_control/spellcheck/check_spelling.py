@@ -33,7 +33,7 @@ def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
         "-m",
         "pyspelling",
         "-c",
-        f"{PROJECT_ROOT}/spellcheck/.spellcheck.yaml",
+        f"{root_dir}/spellcheck/.spellcheck.yaml",
         "-n",
         task,
     ]
