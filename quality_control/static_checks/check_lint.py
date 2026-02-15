@@ -166,7 +166,7 @@ def main() -> None:
             root_dir=root_dir,
         )
         if not check_lint_level(stdout, 10):
-            msg = ', '.join(str(i) for i in addons_paths)
+            msg = ", ".join(str(i) for i in addons_paths)
             logger.info(f"Running lint on {msg} failed!")
             check_is_failed = True
 
