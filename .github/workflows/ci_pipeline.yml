@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup FIPL environment
-        uses: fipl-hse/setup-env-action@v0.11
+        uses: fipl-hse/setup-env-action@v0.13
       - name: Confirming everything is OK
         run: |
           ls -la venv
@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup FIPL environment
-        uses: fipl-hse/setup-env-action@v0.11
+        uses: fipl-hse/setup-env-action@v0.13
       - name: Code Style
         run: |
           source venv/bin/activate
@@ -55,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup FIPL environment
-        uses: fipl-hse/setup-env-action@v0.11
+        uses: fipl-hse/setup-env-action@v0.13
       - name: Flake8 check
         run: |
           source venv/bin/activate
