@@ -71,8 +71,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup FIPL environment
-        uses: fipl-hse/setup-env-action@v0.11
-      - name: Flake8 check
+        uses: fipl-hse/setup-env-action@v0.13
+      - name: MyPy check
         run: |
           source venv/bin/activate
           export PYTHONPATH=$(pwd)
