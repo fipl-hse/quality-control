@@ -64,12 +64,8 @@ def main() -> None:
 
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
     for lab_path in labs_list:
-        if "settings.json" in listdir(lab_path):
-            target_score = LabSettings(PROJECT_ROOT / f"{lab_path}/settings.json").target_score
-
-            if target_score > 5:
-                logger.info(f"Running flake8 for lab {lab_path}")
-                check_flake8_on_paths([lab_path], root_dir=root_dir)
+        logger.info(f"Running flake8 for lab {lab_path}")
+        check_flake8_on_paths([lab_path], root_dir=root_dir)
 
 
 if __name__ == "__main__":
