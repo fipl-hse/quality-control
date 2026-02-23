@@ -3,7 +3,6 @@ Check flake8 to check the style and quality of Python code.
 """
 
 # pylint: disable=duplicate-code
-from os import listdir
 from pathlib import Path
 
 from logging518.config import fileConfig
@@ -14,8 +13,6 @@ from quality_control.cli_unifier import (
     handles_console_error,
 )
 from quality_control.console_logging import get_child_logger
-from quality_control.constants import PROJECT_ROOT
-from quality_control.lab_settings import LabSettings
 from quality_control.project_config import ProjectConfig
 from quality_control.static_checks.check_black import QualityControlArgumentsParser
 
