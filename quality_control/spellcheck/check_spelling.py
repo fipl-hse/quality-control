@@ -15,7 +15,6 @@ from quality_control.cli_unifier import (
     handles_console_error,
 )
 from quality_control.console_logging import get_child_logger
-from quality_control.constants import PROJECT_ROOT
 from quality_control.static_checks.check_black import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
@@ -33,7 +32,7 @@ def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
         "-m",
         "pyspelling",
         "-c",
-        f"{PROJECT_ROOT}/spellcheck/.spellcheck.yaml",
+        f"{root_dir}/spellcheck/.spellcheck.yaml",
         "-n",
         task,
     ]
