@@ -9,37 +9,25 @@ from logging518.config import fileConfig
 
 from quality_control.console_logging import get_child_logger
 from quality_control.static_checks.check_black import QualityControlArgumentsParser
+from quality_control.project_config import ProjectConfig
 
 logger = get_child_logger(__file__)
 
 
-def get_paths(root_dir: Path) -> list:
+def get_paths(root_dir: Path, exclude_dirs: set[str]) -> list[Path]:
     """
-    Get paths to non-python files.
+    Get paths excluding configured directories.
 
     Returns:
-        list: Paths to non-python files
+        list[Path]: Paths to excluded directories
     """
-    paths_to_exclude = {
-        "venv",
-        ".venv",
-        ".git",
-        ".idea",
-        ".coverage",
-        ".mypy_cache",
-        ".pytest_cache",
-        "__pycache__",
-        "build",
-        "russian-syntagrus-ud-2.0-170801.udpipe",
-        "tmp",
-        "intersphinx",
-        "test_tmp",
-        "dist",
-    }
+    only_sources = [
+        file for file in root_dir.iterdir()
+        if file.name not in exclude_dirs
+    ]
 
-    only_sources = [file for file in root_dir.iterdir() if file.name not in paths_to_exclude]
+    list_with_paths: list[Path] = []
 
-    list_with_paths = []
     for source_file in only_sources:
         if not source_file.is_dir():
             list_with_paths.append(source_file)
@@ -49,47 +37,48 @@ def get_paths(root_dir: Path) -> list:
             [
                 file
                 for file in source_file.rglob("*")
-                if not set(i.name for i in file.parents) & paths_to_exclude
+                if not set(parent.name for parent in file.parents) & exclude_dirs
             ]
         )
     return list_with_paths
 
 
-def check_paths(list_with_paths: list) -> list:
+def check_paths(
+    list_with_paths: list[Path],
+    exclude_files: set[str],
+    exclude_extensions: set[str],
+) -> list[Path]:
     """
-    Check if the path is correct.
+    Check valid files for newline check.
 
     Args:
+        exclude_extensions: Extensions to exclude
+        exclude_files: Files to exclude
         list_with_paths (list): Paths to non-python files
 
     Returns:
         list: Appropriate paths
     """
-    paths_to_exclude = [
-        "1_raw.txt",
-        "__init__.cpython-310.pyc",
-        "test_params.cpython-310.pyc",
-    ]
-    bad_endings = [".jpg", ".png", ".pkl", ".udpipe", ".zip"]
-    paths = []
+    paths: list[Path] = []
+
     for path in sorted(list_with_paths):
         is_file = path.is_file() and path.stat().st_size != 0
         is_ok_file = (
-            path.name not in paths_to_exclude
+            path.name not in exclude_files
+            and path.suffix not in exclude_extensions
             and "__pycache__" not in str(path)
-            and path.suffix not in bad_endings
         )
         if is_file and is_ok_file:
             paths.append(path)
     return paths
 
 
-def has_newline(paths: list) -> bool:
+def has_newline(paths: list[Path]) -> bool:
     """
     Check for a newline at the end.
 
     Args:
-        paths (list): Appropriate paths
+        paths (list[Path]): Appropriate paths
 
     Returns:
         bool: Has newline or not
@@ -100,7 +89,7 @@ def has_newline(paths: list) -> bool:
         logger.info(f"Analyzing {path}")
         with open(path, encoding="utf-8") as file:
             lines = file.readlines()
-        if lines[-1][-1] != "\n":
+        if lines and not lines[-1].endswith("\n"):
             bad_paths.append(path)
             check_is_good = False
     if check_is_good:
@@ -120,8 +109,17 @@ def main() -> None:
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
     fileConfig(toml_config)
-    list_with_paths = get_paths(root_dir)
-    paths = check_paths(list_with_paths)
+
+    config_path = root_dir / "project_config.json"
+    project_config = ProjectConfig(config_path)
+    newline_config = project_config.get_newline_config()
+
+    exclude_dirs = set(newline_config.exclude_dirs)
+    exclude_files = set(newline_config.exclude_files)
+    exclude_extensions = set(newline_config.exclude_extensions)
+
+    list_with_paths = get_paths(root_dir, exclude_dirs)
+    paths = check_paths(list_with_paths, exclude_files, exclude_extensions)
     result = has_newline(paths)
     sys.exit(not result)
 
