@@ -8,8 +8,8 @@ from pathlib import Path
 from logging518.config import fileConfig
 
 from quality_control.console_logging import get_child_logger
-from quality_control.static_checks.check_black import QualityControlArgumentsParser
 from quality_control.project_config import ProjectConfig
+from quality_control.static_checks.check_black import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
