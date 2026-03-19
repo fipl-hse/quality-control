@@ -167,7 +167,7 @@ def main() -> None:
             stdout, _, _ = check_lint_on_paths(
                 [lab_path],
                 toml_config,
-                ignore_tests=False,
+                ignore_tests=args.repository_type == "public",
                 exit_zero=True,
                 root_dir=root_dir,
             )
