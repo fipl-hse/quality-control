@@ -69,6 +69,16 @@ class Stub:
 
 
 @dataclass
+class SyncPathsPair:
+    """
+    BaseModel for synchronization tool.
+    """
+
+    source: str
+    target: str
+
+
+@dataclass
 class ProjectConfigDTO:
     """
     BaseModel for ProjectConfig.
@@ -78,6 +88,7 @@ class ProjectConfigDTO:
     addons: list[Addon] = field(default_factory=list[Addon])
     repository: Repository = field(default_factory=Repository)
     stubs_config: Stub = field(default_factory=Stub)
+    doc_sync_config: list[SyncPathsPair] = field(default_factory=list[SyncPathsPair])
 
 
 class ProjectConfig(ProjectConfigDTO):
@@ -239,3 +250,12 @@ class ProjectConfig(ProjectConfigDTO):
             StubsConfig: The stubs configuration object.
         """
         return self._dto.stubs_config
+
+    def get_doc_sync_config(self) -> list[SyncPathsPair]:
+        """
+        Method that collects paths for synchronization
+
+        Returns:
+            list[SyncPathsPair]: pairs of source/target paths for synchronization.
+        """
+        return list(self._dto.doc_sync_config)
