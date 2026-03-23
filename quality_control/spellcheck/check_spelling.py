@@ -15,7 +15,7 @@ from quality_control.cli_unifier import (
     handles_console_error,
 )
 from quality_control.console_logging import get_child_logger
-from quality_control.static_checks.check_black import QualityControlArgumentsParser
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
@@ -90,17 +90,17 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    stdout, _, return_code = check_spelling_on_paths(task="ru", root_dir=root_dir)
+    stdout, _, return_code = check_spelling_on_paths(task="Ru", root_dir=root_dir)
     missed_russian = (
         set(get_misspelled_from_stdout(stdout, russian_word_p)) if return_code else set()
     )
 
-    stdout, _, return_code = check_spelling_on_paths(task="en", root_dir=root_dir)
+    stdout, _, return_code = check_spelling_on_paths(task="En", root_dir=root_dir)
     missed_english = (
         set(get_misspelled_from_stdout(stdout, english_word_p)) if return_code else set()
     )
 
-    stdout, _, return_code = check_spelling_on_paths(task="docstrings", root_dir=root_dir)
+    stdout, _, return_code = check_spelling_on_paths(task="Docstrings", root_dir=root_dir)
     missed_docstrings = set(get_misspelled_from_stdout(stdout)) if return_code else set()
 
     if not missed_docstrings and not missed_russian and not missed_english:
