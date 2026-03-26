@@ -69,17 +69,6 @@ class Stub:
 
 
 @dataclass
-class Newline:
-    """
-    Configuration for newline check.
-    """
-
-    exclude_dirs: list[str] = field(default_factory=list)
-    exclude_files: list[str] = field(default_factory=list)
-    exclude_extensions: list[str] = field(default_factory=list)
-
-
-@dataclass
 class ProjectConfigDTO:
     """
     BaseModel for ProjectConfig.
@@ -89,7 +78,7 @@ class ProjectConfigDTO:
     addons: list[Addon] = field(default_factory=list[Addon])
     repository: Repository = field(default_factory=Repository)
     stubs_config: Stub = field(default_factory=Stub)
-    newline_check: Newline = field(default_factory=Newline)
+    newline_config: list[str] = field(default_factory=list)
 
 
 class ProjectConfig(ProjectConfigDTO):
@@ -252,11 +241,11 @@ class ProjectConfig(ProjectConfigDTO):
         """
         return self._dto.stubs_config
 
-    def get_newline_config(self) -> Newline:
+    def get_newline_config(self) -> list[str]:
         """
         Returns configuration for newline check.
 
         Returns:
-            Newline: The newline check configuration object.
+            list[str]: List of patterns to exclude.
         """
-        return self._dto.newline_check
+        return self._dto.newline_config
