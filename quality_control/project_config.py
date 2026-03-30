@@ -78,6 +78,7 @@ class ProjectConfigDTO:
     addons: list[Addon] = field(default_factory=list[Addon])
     repository: Repository = field(default_factory=Repository)
     stubs_config: Stub = field(default_factory=Stub)
+    newline_config: list[str] = field(default_factory=list)
 
 
 class ProjectConfig(ProjectConfigDTO):
@@ -239,3 +240,12 @@ class ProjectConfig(ProjectConfigDTO):
             StubsConfig: The stubs configuration object.
         """
         return self._dto.stubs_config
+
+    def get_newline_config(self) -> list[str]:
+        """
+        Returns configuration for newline check.
+
+        Returns:
+            list[str]: List of patterns to exclude.
+        """
+        return self._dto.newline_config

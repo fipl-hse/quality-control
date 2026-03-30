@@ -1,6 +1,11 @@
+[build-system]
+requires = ["setuptools>=40.8.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "fiplconfig"
 version = "0.2.0"
+dynamic = ["readme", "requires-python", "dependencies", "scripts"]
 
 [tool.black]
 line-length = 100
