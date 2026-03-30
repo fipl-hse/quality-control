@@ -26,4 +26,4 @@ sphinx_design==0.7.0
 tqdm==4.67.3
 typed-argument-parser==1.11.0
 types-simplejson==3.20.0.20250822
-types-tqdm==4.67.3
+types-tqdm==4.67.3.20260303
