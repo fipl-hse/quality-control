@@ -55,7 +55,8 @@ def compile_pattern() -> re.Pattern:
     )
 
 
-def check_dependencies(lines: list, compiled_pattern: re.Pattern, path: Path, root_dir: Path) -> bool:
+def check_dependencies(
+        lines: list, compiled_pattern: re.Pattern, path: Path, root_dir: Path) -> bool:
     """
     Check that dependencies confirm to the template.
 
