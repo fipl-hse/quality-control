@@ -10,7 +10,6 @@ from pathlib import Path
 from logging518.config import fileConfig
 
 from quality_control.console_logging import get_child_logger
-from quality_control.constants import PROJECT_ROOT
 from quality_control.static_checks.check_black import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
@@ -56,7 +55,7 @@ def compile_pattern() -> re.Pattern:
     )
 
 
-def check_dependencies(lines: list, compiled_pattern: re.Pattern, path: Path) -> bool:
+def check_dependencies(lines: list, compiled_pattern: re.Pattern, path: Path, root_dir: Path) -> bool:
     """
     Check that dependencies confirm to the template.
 
@@ -64,6 +63,7 @@ def check_dependencies(lines: list, compiled_pattern: re.Pattern, path: Path) ->
         lines (list): Dependencies
         compiled_pattern (re.Pattern): Compiled pattern
         path (Path): Path to file with dependencies
+        root_dir (Path): Path to root where script is called
 
     Returns:
         bool: Do dependencies confirm to the template or not
@@ -75,14 +75,14 @@ def check_dependencies(lines: list, compiled_pattern: re.Pattern, path: Path) ->
     if expected != actual:
         expected_str = "\n".join(expected)
         logger.error(
-            f"Dependencies in {path.relative_to(PROJECT_ROOT)} do not follow sorting rule."
+            f"Dependencies in {path.relative_to(root_dir)} do not follow sorting rule."
             f"\nExpected\n{expected_str}"
         )
         return False
     for line in lines:
         if not re.search(compiled_pattern, line):
             logger.error(
-                f"Specific dependency in {path.relative_to(PROJECT_ROOT)} "
+                f"Specific dependency in {path.relative_to(root_dir)} "
                 f"do not conform to the template.\n{line}"
             )
             return False
@@ -102,7 +102,7 @@ def main() -> None:
     compiled_pattern = compile_pattern()
     for path in paths:
         lines = get_requirements(path)
-        if not check_dependencies(lines, compiled_pattern, path):
+        if not check_dependencies(lines, compiled_pattern, path, root_dir):
             logger.error(f"{path.relative_to(root_dir)} : FAIL")
             sys.exit(1)
         else:
