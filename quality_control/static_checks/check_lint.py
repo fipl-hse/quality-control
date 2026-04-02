@@ -3,10 +3,12 @@ Check lint for code style in Python code.
 """
 
 # pylint: disable=duplicate-code
+import argparse
 import re
 import sys
 from os import listdir
 from pathlib import Path
+from typing import Optional
 
 from logging518.config import fileConfig
 
@@ -27,6 +29,8 @@ class QualityControlLintArgumentsParser(QualityControlArgumentsParser):
     """
     CLI for lint checks.
     """
+
+    repository_type: Optional[str] = None
 
 
 def transform_score_into_lint(target_score: int) -> int:
@@ -124,6 +128,18 @@ def check_lint_level(lint_output: str, target_score: int) -> bool:
     return is_passed(lint_output, target_lint_level)
 
 
+def parse_arguments() -> argparse.Namespace:
+    """
+    Parse command line arguments.
+
+    Returns:
+        argparse.Namespace: Parsed arguments.
+    """
+    parser = argparse.ArgumentParser(description="Run check_lint.py checks for each lab.")
+    parser.add_argument("--repository_type", help="Type of the repository (public/admin)")
+    return parser.parse_args()
+
+
 def main() -> None:
     """
     Run lint checks for the project.
@@ -167,7 +183,7 @@ def main() -> None:
             stdout, _, _ = check_lint_on_paths(
                 [lab_path],
                 toml_config,
-                ignore_tests=True,
+                ignore_tests=args.repository_type == "public",
                 exit_zero=True,
                 root_dir=root_dir,
             )
