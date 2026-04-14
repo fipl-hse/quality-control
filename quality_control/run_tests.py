@@ -24,8 +24,6 @@ class CommandLineInterface(QualityControlArgumentsParser):
     Types for the argument parser.
     """
 
-    pr_name: str
-    pr_author: str
     lab_path: str | None = None
     pytest_label: str | None = None
 
