@@ -1,1 +1,1 @@
-recursive-include quality_control *.txt *.json *.yaml
+recursive-include quality_control *.txt *.json *.yaml *.typed
