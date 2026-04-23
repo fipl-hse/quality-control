@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fiplconfig"
-version = "0.2.0"
+version = "0.2.1"
 dynamic = ["readme", "requires-python", "dependencies", "scripts"]
 
 [tool.black]
