@@ -85,10 +85,10 @@ def test_no_prohibited_modules(
 
         if not MODULE_IMPORTS.isdisjoint(prohibited_modules):
             raise ProhibitedModulesFoundError(
-                f"Checked {lab_config.name}/{stub}."
+                f"Checked {lab_config.name}/{stub}. "
                 f"Found prohibited modules: {MODULE_IMPORTS & set(prohibited_modules)}."
             )
-        logger.info(f"Checked {lab_config.name}/{stub}." " All modules are allowed.")
+        logger.info(f"Checked {lab_config.name}/{stub}. All modules are allowed.")
         MODULE_IMPORTS.clear()
 
 
@@ -111,9 +111,10 @@ def main() -> None:
         lab = project_config.get_lab(args.lab_path)
         if lab:
             labs = [lab]
+            logger.info(f"Current scope: {args.lab_path}")
     else:
         labs = project_config.get_labs()
-    logger.info(f"Current scope: {labs}")
+        logger.info(f"Current scope: {project_config.get_labs_paths()}")
 
     for lab in labs:
         if check_skip(root_dir, lab.name):
