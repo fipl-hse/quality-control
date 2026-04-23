@@ -19,7 +19,7 @@ logger = get_child_logger(__file__)
 MODULE_IMPORTS = set()
 
 
-class CommandLineInterface(QualityControlArgumentsParser):
+class ModuleUsageCommandLineInterface(QualityControlArgumentsParser):
     """
     Types for the argument parser.
     """
@@ -96,7 +96,7 @@ def main() -> None:
     """
     Running check for active labs.
     """
-    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
+    args = ModuleUsageCommandLineInterface(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
@@ -108,7 +108,9 @@ def main() -> None:
     project_config = ProjectConfig(project_config_path)
 
     if args.lab_path:
-        labs = [project_config.get_lab(args.lab_path)]
+        lab = project_config.get_lab(args.lab_path)
+        if lab:
+            labs = [lab]
     else:
         labs = project_config.get_labs()
     logger.info(f"Current scope: {labs}")
