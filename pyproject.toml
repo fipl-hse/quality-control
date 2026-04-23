@@ -71,6 +71,15 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = [
+    'quality_control/static_checks/check_module_usage',
+]
+disable_error_code = [
+    'method-assign'
+]
+
+
 [tool.logging]
 version = 1
 disable_existing_loggers = true

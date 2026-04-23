@@ -9,7 +9,7 @@ flake8==7.3.0
 ghapi==1.0.13
 httpx==0.26.0
 logging518==1.0.0
-mypy==1.19.1
+mypy==1.20.2
 pandas-stubs==3.0.0.260204
 pydantic==2.12.5
 pydocstyle==6.3.0
