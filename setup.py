@@ -33,6 +33,7 @@ setup(
             "fiplconfig.check_newline=quality_control.static_checks.check_newline:main",
             "fiplconfig.check_pr_name=quality_control.static_checks.check_pr_name:main",
             "fiplconfig.check_requirements=quality_control.static_checks.check_requirements:main",
+            "fiplconfig.check_module_usage=quality_control.static_checks.check_module_usage:main",
             "fiplconfig.check_spelling=quality_control.spellcheck.check_spelling:main",
             "fiplconfig.coverage_analyzer=quality_control.collect_coverage.coverage_analyzer:main",
             "fiplconfig.sort_wordlist=quality_control.spellcheck.sort_wordlist:main",
@@ -40,7 +41,6 @@ setup(
             "fiplconfig.run_tests=quality_control.run_tests:main",
             "fiplconfig.run_start=quality_control.run_start:main",
             "fiplconfig.update_forks=quality_control.github.update_forks:main",
-            "fiplconfig.check_module_usage=quality_control.github.check_module_usage:main",
         ]
     },
     long_description=(Path(__file__).parent / "README.md").read_text(encoding="utf-8"),
