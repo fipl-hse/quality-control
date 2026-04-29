@@ -2,6 +2,8 @@
 Course projects do not use prohibited modules.
 """
 
+# pylint: disable=invalid-name
+
 import ast
 from pathlib import Path
 from typing import Any
@@ -16,51 +18,52 @@ from quality_control.run_tests import check_skip
 logger = get_child_logger(__file__)
 
 
-MODULE_IMPORTS = set()
-
-
-class ModuleUsageCommandLineInterface(QualityControlArgumentsParser):
-    """
-    Types for the argument parser.
-    """
-
-    lab_path: str | None = None
-
-
 class ProhibitedModulesFoundError(Exception):
     """
     Found prohibited modules usage in the lab.
     """
 
 
-def custom_visit_import(node: Any) -> None:
+class ImportsParser(ast.NodeVisitor):
     """
-    Custom Visit_Import method for ast.NodeVisitor.
-
-    Args:
-        node (Any): ast node object.
+    Custom import parser class.
     """
-    for name in node.names:
-        # import MODULE
-        MODULE_IMPORTS.add(name.name.split(".")[0])
 
+    def __init__(self) -> None:
+        """
+        Initialize ImportsParser.
+        """
+        super().__init__()
 
-def custom_visit_import_from(node: Any) -> None:
-    """
-    Custom Visit_ImportFrom method for ast.NodeVisitor.
+        self.module_imports = set()
 
-    Args:
-        node (Any): ast node object.
-    """
-    if node.module is not None and node.level == 0:
-        # from MODULE(.submodule) import name
-        MODULE_IMPORTS.add(node.module.split(".")[0])
-    elif node.module is None:
-        # from . import MODULE (. is the parent dir to the file)
-        MODULE_IMPORTS.add(node.name.split(".")[0])
-    elif node.level > 0:
-        # from .(MODULE) import name
-        MODULE_IMPORTS.add(node.module.split(".")[1])
+    def visit_Import(self, node: Any) -> None:
+        """
+        Custom visit_Import method implementation.
+
+        Args:
+            node (Any): "import" node to parse modules from.
+        """
+        for name in node.names:
+            # import MODULE
+            self.module_imports.add(name.name.split(".")[0])
+
+    def visit_ImportFrom(self, node: Any) -> None:
+        """
+        Custom visit_ImportFrom method implementation.
+
+        Args:
+            node (Any): "import from" node to parse modules from.
+        """
+        if node.module is not None and node.level == 0:
+            # from MODULE(.submodule) import name
+            self.module_imports.add(node.module.split(".")[0])
+        elif node.module is None:
+            # from . import MODULE (. is the parent dir to the file)
+            self.module_imports.add(node.name.split(".")[0])
+        elif node.level > 0:
+            # from .(MODULE) import name
+            self.module_imports.add(node.module.split(".")[1])
 
 
 def test_no_prohibited_modules(
@@ -75,28 +78,25 @@ def test_no_prohibited_modules(
         prohibited_modules (list[str]): Prohibited modules from project config.
     """
     for stub in lab_config.stubs:
-        import_collector = ast.NodeVisitor()
-        import_collector.visit_Import = custom_visit_import
-        import_collector.visit_ImportFrom = custom_visit_import_from
-
+        import_collector = ImportsParser()
         lab_path = root_dir / Path(lab_config.name) / Path(stub)
         with open(lab_path, "r", encoding="utf-8") as f:
             import_collector.visit(ast.parse(f.read()))
 
-        if not MODULE_IMPORTS.isdisjoint(prohibited_modules):
+        if not import_collector.module_imports.isdisjoint(prohibited_modules):
             raise ProhibitedModulesFoundError(
                 f"Checked {lab_config.name}/{stub}. "
-                f"Found prohibited modules: {MODULE_IMPORTS & set(prohibited_modules)}."
+                "Found prohibited modules: "
+                f"{import_collector.module_imports & set(prohibited_modules)}."
             )
         logger.info(f"Checked {lab_config.name}/{stub}. All modules are allowed.")
-        MODULE_IMPORTS.clear()
 
 
 def main() -> None:
     """
     Running check for active labs.
     """
-    args = ModuleUsageCommandLineInterface(underscores_to_dashes=True).parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
@@ -107,14 +107,8 @@ def main() -> None:
 
     project_config = ProjectConfig(project_config_path)
 
-    if args.lab_path:
-        lab = project_config.get_lab(args.lab_path)
-        if lab:
-            labs = [lab]
-            logger.info(f"Current scope: {args.lab_path}")
-    else:
-        labs = project_config.get_labs()
-        logger.info(f"Current scope: {project_config.get_labs_paths()}")
+    labs = project_config.get_labs()
+    logger.info(f"Current scope: {project_config.get_labs_paths()}")
 
     for lab in labs:
         if check_skip(root_dir, lab.name):
