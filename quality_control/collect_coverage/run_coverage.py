@@ -40,7 +40,7 @@ def get_target_score(lab_path: Path) -> int:
         int: Desired score
     """
     settings = LabSettings(lab_path / "settings.json")
-    logger.info("settings")
+    logger.info(f"{settings}")
     return settings.target_score
 
 
