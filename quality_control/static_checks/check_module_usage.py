@@ -108,7 +108,6 @@ def main() -> None:
     project_config = ProjectConfig(project_config_path)
 
     labs = project_config.get_labs()
-    logger.info(f"Current scope: {project_config.get_labs_paths()}")
 
     for lab in labs:
         if check_skip(root_dir, lab.name):
