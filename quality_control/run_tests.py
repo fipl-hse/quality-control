@@ -94,6 +94,7 @@ def check_skip(root_dir: Path, lab_path: str) -> bool:
     if lab_path:
         score_path = root_dir / lab_path
         score = get_target_score(lab_path=score_path)
+        logger.info(score_path, score)
         if score == 0:
             logger.info(f"Skipping check due to no mark for lab {lab_path}.")
             return True
