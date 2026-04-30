@@ -111,7 +111,6 @@ def main() -> None:
 
     for lab in labs:
         if check_skip(root_dir, lab.name):
-            logger.info(root_dir, lab.name, project_config.get_lab(lab.name))
             continue
 
         test_no_prohibited_modules(
