@@ -90,6 +90,7 @@ class ProjectConfigDTO:
     stubs_config: Stub = field(default_factory=Stub)
     doc_sync_config: list[SyncPathsPair] = field(default_factory=list[SyncPathsPair])
     newline_config: list[str] = field(default_factory=list)
+    prohibited_modules: list[str] = field(default_factory=list)
 
 
 class ProjectConfig(ProjectConfigDTO):
@@ -269,3 +270,12 @@ class ProjectConfig(ProjectConfigDTO):
             list[str]: List of patterns to exclude.
         """
         return self._dto.newline_config
+
+    def get_prohibited_modules(self) -> list[str]:
+        """
+        Returns modules that are prohibited to use in the lab.
+
+        Returns:
+            list[str]: List of modules.
+        """
+        return self._dto.prohibited_modules
