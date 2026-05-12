@@ -13,12 +13,12 @@ from typing import Any, Optional
 
 from logging518.config import fileConfig
 from pydantic import BaseModel, Field, ValidationError
+
 from quality_control.cli_unifier import _run_console_tool, handles_console_error
 from quality_control.console_logging import get_child_logger
+from quality_control.constants import SYNC_CONFIG_PATH
 from quality_control.project_config import ProjectConfig
 from quality_control.quality_control_parser import QualityControlArgumentsParser
-
-from quality_control.constants import SYNC_CONFIG_PATH
 
 logger = get_child_logger(__file__)
 
