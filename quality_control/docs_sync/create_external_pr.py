@@ -227,27 +227,27 @@ def _get_blob_sha(repo: git.Repo, ref_str: str, file_path: Path) -> str | None:
     """
     try:
         commit = repo.commit(ref_str)
-        blob = commit.tree[file_path]
+        blob = commit.tree[str(file_path)]
         return blob.hexsha
     except (KeyError, git.BadName, git.BadObject):
         return None
 
 
-def _read_blob(repo: git.Repo, ref_str: str, file_path: Path) -> Any:
+def _read_blob(repo: git.Repo, ref_str: str, file_path: Path | str) -> Any:
     """
     Return decoded text content of file_path at ref_str, or None.
 
     Args:
         repo (git.Repo): Repository object.
         ref_str (str): Ref name.
-        file_path (Path): Relative path inside the tree.
+        file_path (Path | str): Relative path inside the tree.
 
     Returns:
         Any: File contents as text, or None when absent.
     """
     try:
         commit = repo.commit(ref_str)
-        blob = commit.tree[file_path]
+        blob = commit.tree[str(file_path)]
         return blob.data_stream.read().decode("utf-8")
     except (KeyError, git.BadName, git.BadObject):
         return None
