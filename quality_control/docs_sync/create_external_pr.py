@@ -4,13 +4,13 @@ Python tool for synchronization between source and target repositories.
 
 import json
 import os
-import shutil
 import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
+import git
 from logging518.config import fileConfig
 from pydantic import BaseModel, Field, ValidationError
 
@@ -79,26 +79,10 @@ class SyncResult:
     json_changed: bool
 
 
-# Wrappers for basic commands
-@handles_console_error(ok_codes=(0, 1, 128))
-def run_git(args: list[str], **kwargs: str) -> Any:
-    """
-    Run git command via imported function
-
-    Args:
-        args (list[str]): Arguments for git command.
-        kwargs (str): Keyword arguments.
-
-    Returns:
-        Any: Result of git command.
-    """
-    return _run_console_tool("git", args, **kwargs)
-
-
 @handles_console_error(ok_codes=(0, 1))
 def run_gh(args: list[str]) -> Any:
     """
-    Run gh command via imported function
+    Run gh command via imported function.
 
     Args:
         args (list[str]): Arguments for gh command.
@@ -111,14 +95,14 @@ def run_gh(args: list[str]) -> Any:
 
 def get_pr_data(repo_name: str, pr_number: str) -> PRData | None:
     """
-    Get PR data via gh
+    Get PR data via gh.
 
     Args:
         repo_name (str): Name of source repo.
         pr_number (str): Number of needed PR in source repo.
 
     Returns:
-        Optional["PRData"]: PR data.
+        Optional[PRData]: PR data.
     """
     stdout, stderr, return_code = run_gh(
         [
@@ -147,128 +131,160 @@ def get_pr_data(repo_name: str, pr_number: str) -> PRData | None:
         return None
 
 
-def check_branch_exists(branch_name: str, repo_path: str = ".") -> bool:
+def clone_repo(target_repo: str, gh_token: str) -> git.Repo:
     """
-    Check if branch in remote repo exists
+    Clone target repo, removing any existing local copy first.
 
     Args:
-        branch_name (str): Name of needed branch.
-        repo_path (str, optional): Path to repo. Defaults to ".".
+        target_repo (str): Repository name.
+        gh_token (str): GitHub token used for authenticated HTTPS clone.
 
     Returns:
-        bool: True if needed branch exists in remote repo.
-    """
-    _, _, return_code = run_git(
-        ["show-ref", "--quiet", f"refs/remotes/origin/{branch_name}"], cwd=repo_path
-    )
-    return bool(return_code == 0)
-
-
-def clone_repo(target_repo: str, gh_token: str) -> None:
-    """
-    Clone target repo
-
-    Args:
-        target_repo (str): Name of target repo.
-        gh_token (str): Token to process operations.
+        git.Repo: Cloned repository object.
     """
     target_path = Path(target_repo)
     if target_path.exists():
+        import shutil
+
         shutil.rmtree(target_path)
 
-    run_git(["clone", f"https://{gh_token}@github.com/fipl-hse/{target_repo}.git"])
+    url = f"https://{gh_token}@github.com/fipl-hse/{target_repo}.git"
+    logger.info("Cloning %s …", url.replace(gh_token, "***"))
+    repo = git.Repo.clone_from(url, str(target_path))
+    return repo
 
 
-def setup_git_config(repo_path: str) -> None:
+def setup_git_config(repo: git.Repo) -> None:
     """
-    Setup config
+    Configure bot identity for commits.
 
     Args:
-        repo_path (str): Path to repo.
+        repo (git.Repo): Repository to configure.
     """
-    run_git(["config", "user.name", "github-actions[bot]"], cwd=repo_path)
-    run_git(
-        ["config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"],
-        cwd=repo_path,
-    )
+    with repo.config_writer() as cfg:
+        cfg.set_value("user", "name", "github-actions[bot]")
+        cfg.set_value(
+            "user",
+            "email",
+            "41898282+github-actions[bot]@users.noreply.github.com",
+        )
 
 
-def checkout_or_create_branch(branch_name: str, repo_path: str) -> None:
+def checkout_or_create_branch(repo: git.Repo, branch_name: str) -> None:
     """
-    Checkout on existing branch or create it
+    Checkout an existing remote branch or create a new local one.
 
     Args:
-        branch_name (str): Name of needed branch.
-        repo_path (str): Path to repo.
+        repo (git.Repo): Repository object.
+        branch_name (str): Branch to checkout / create.
     """
-    if check_branch_exists(branch_name, repo_path):
-        run_git(["checkout", branch_name], cwd=repo_path)
-        run_git(["pull", "origin", branch_name], cwd=repo_path)
+    remote_ref = f"origin/{branch_name}"
+    remote_exists = any(ref.name == remote_ref for ref in repo.remotes["origin"].refs)
+
+    if remote_exists:
+        repo.git.checkout(branch_name)
+        repo.remotes["origin"].pull(branch_name)
+        logger.info("Checked out existing branch %s", branch_name)
     else:
-        run_git(["checkout", "-b", branch_name], cwd=repo_path)
+        repo.git.checkout("-b", branch_name)
+        logger.info("Created new branch %s", branch_name)
 
 
-def add_remote_and_fetch(remote_name: str, repo_url: str, repo_path: str) -> None:
+def add_remote_and_fetch(repo: git.Repo, remote_name: str, repo_url: str) -> git.Remote:
     """
-    Add remote and fetch.
+    Add a remote if it does not exist yet, then fetch it.
 
     Args:
-        remote_name (str): Name of remote repo.
-        repo_url (str): Link to remote repo.
-        repo_path (str): Path to remote repo.
-    """
-    stdout, _, _ = run_git(["remote"], cwd=repo_path)
-    remotes = stdout.split()
-
-    if remote_name not in remotes:
-        run_git(["remote", "add", remote_name, repo_url], cwd=repo_path)
-
-    run_git(["fetch", remote_name], cwd=repo_path)
-
-
-def get_json_from_source(source_ref: str, target_repo: str) -> tuple[Any | None, bool]:
-    """
-    Get JSON content from source reference and update local file if changed.
-
-    Args:
-        source_ref (str): Reference in source repo.
-        target_repo (str): Path to target repository.
+        repo (git.Repo): Repository object.
+        remote_name (str): Short name for the new remote.
+        repo_url (str): URL of the remote repository.
 
     Returns:
-        tuple[Any | None, bool]: ProjectConfig object and whether it was changed.
+        git.Remote: The remote object after fetching.
     """
-    json_path = Path(target_repo) / SYNC_CONFIG_PATH
-    source_sha = None
-    target_sha = None
-
-    stdout, _, rc = run_git(["rev-parse", f"{source_ref}:{SYNC_CONFIG_PATH}"], cwd=target_repo)
-    if rc == 0:
-        source_sha = stdout.strip()
+    existing_names = [r.name for r in repo.remotes]
+    if remote_name not in existing_names:
+        remote = repo.create_remote(remote_name, repo_url)
+        logger.info("Added remote %s", remote_name)
     else:
-        logger.info("JSON file not found in source ref %s", source_ref)
+        remote = repo.remotes[remote_name]
 
-    stdout, _, rc = run_git(["rev-parse", f"origin/main:{SYNC_CONFIG_PATH}"], cwd=target_repo)
-    if rc == 0:
-        target_sha = stdout.strip()
-    else:
-        logger.info("JSON file not found in target main")
+    remote.fetch()
+    return remote
+
+
+def _get_blob_sha(repo: git.Repo, ref_str: str, file_path: str) -> str | None:
+    """
+    Return the git object SHA for file_path at ref_str, or None if absent.
+
+    Args:
+        repo (git.Repo): Repository object.
+        ref_str (str): A ref name resolvable by the repo.
+        file_path (str): Relative path inside the tree.
+
+    Returns:
+        str | None: Object SHA string, or None when the path doesn't exist.
+    """
+    try:
+        commit = repo.commit(ref_str)
+        blob = commit.tree[file_path]
+        return blob.hexsha
+    except (KeyError, git.BadName, git.BadObject):
+        return None
+
+
+def _read_blob(repo: git.Repo, ref_str: str, file_path: str) -> str | None:
+    """
+    Return decoded text content of file_path at ref_str, or None.
+
+    Args:
+        repo (git.Repo): Repository object.
+        ref_str (str): Ref name.
+        file_path (str): Relative path inside the tree.
+
+    Returns:
+        str | None: File contents as text, or None when absent.
+    """
+    try:
+        commit = repo.commit(ref_str)
+        blob = commit.tree[file_path]
+        return blob.data_stream.read().decode("utf-8")
+    except (KeyError, git.BadName, git.BadObject):
+        return None
+
+
+def get_json_from_source(repo: git.Repo, source_ref: str) -> tuple[Any | None, bool]:
+    """
+    Compare sync-config JSON between source ref and target main; update on disk
+    if it changed.
+
+    Args:
+        repo (git.Repo): Target repository object.
+        source_ref (str): Ref in source repo.
+
+    Returns:
+        tuple[Any | None, bool]: (ProjectConfig | None, json_changed).
+    """
+    repo_root = Path(repo.working_dir)
+    json_path = repo_root / SYNC_CONFIG_PATH
+
+    source_sha = _get_blob_sha(repo, source_ref, SYNC_CONFIG_PATH)
+    target_sha = _get_blob_sha(repo, "origin/main", SYNC_CONFIG_PATH)
 
     json_changed = source_sha != target_sha
 
     if json_changed:
         if source_sha is not None:
-            stdout, _, rc = run_git(["show", f"{source_ref}:{SYNC_CONFIG_PATH}"], cwd=target_repo)
-            if rc == 0 and stdout:
-                json_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(json_path, "w", encoding="utf-8") as f:
-                    f.write(stdout)
-                run_git(["add", SYNC_CONFIG_PATH], cwd=target_repo)
-            else:
+            content = _read_blob(repo, source_ref, SYNC_CONFIG_PATH)
+            if content is None:
                 logger.error("Failed to read JSON from source")
                 return None, json_changed
+            json_path.parent.mkdir(parents=True, exist_ok=True)
+            json_path.write_text(content, encoding="utf-8")
+            repo.index.add([SYNC_CONFIG_PATH])
         else:
             if json_path.exists():
-                run_git(["rm", SYNC_CONFIG_PATH], cwd=target_repo)
+                repo.index.remove([SYNC_CONFIG_PATH], working_tree=True)
             return None, json_changed
 
     config = ProjectConfig(json_path)
@@ -276,81 +292,84 @@ def get_json_from_source(source_ref: str, target_repo: str) -> tuple[Any | None,
 
 
 def sync_files_from_source(
-    repo_path: str, source_ref: str, sync_list: list[tuple[str, str]]
+    repo: git.Repo,
+    source_ref: str,
+    sync_list: list[tuple[str, str]],
 ) -> bool:
     """
-    Sync files from source reference into target repo according to mapping.
+    Copy files from source_ref into the working tree according to sync_list.
 
     Args:
-        repo_path (str): Path to target repo.
-        source_ref (str): Reference in source repo.
-        sync_list (list[tuple[str, str]]): List of (source_path, target_path).
+        repo (git.Repo): Target repository object.
+        source_ref (str): Source ref to read blobs from.
+        sync_list (list[tuple[str, str]]): (source_path, target_path) pairs
+            for files whose SHA already differs.
 
     Returns:
-        bool: True if any file was updated/added/removed.
+        bool: True if any file was written or removed.
     """
+    repo_root = Path(repo.working_dir)
     has_changes = False
-    for source_path, target_path in sync_list:
-        stdout, _, return_code = run_git(["show", f"{source_ref}:{source_path}"], cwd=repo_path)
-        full_target_path = Path(repo_path) / target_path
 
-        if return_code == 0 and stdout:
-            full_target_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(full_target_path, "w", encoding="utf-8") as f:
-                f.write(stdout)
-            run_git(["add", target_path], cwd=repo_path)
+    for source_path, target_path in sync_list:
+        content = _read_blob(repo, source_ref, source_path)
+        full_target = repo_root / target_path
+
+        if content is not None:
+            full_target.parent.mkdir(parents=True, exist_ok=True)
+            full_target.write_text(content, encoding="utf-8")
+            repo.index.add([target_path])
             has_changes = True
         else:
-            if full_target_path.exists():
-                run_git(["rm", target_path], cwd=repo_path)
+            if full_target.exists():
+                repo.index.remove([target_path], working_tree=True)
                 has_changes = True
             else:
                 logger.info(
-                    "File %s not found in source and not present in target, nothing to do",
+                    "File %s not found in source and not present in target — skipping",
                     source_path,
                 )
+
     return has_changes
 
 
 def run_sync(
-    target_repo: str, source_ref: str, config: Any | None, json_changed: bool
+    repo: git.Repo,
+    source_ref: str,
+    config: Any | None,
+    json_changed: bool,
 ) -> SyncResult | None:
     """
-    Run synchronization: compare files from mapping and update if needed.
+    Compute which files need syncing and apply changes.
 
     Args:
-        target_repo (str): Path to target repository.
-        source_ref (str): Reference in source repository.
-        config (Optional[Any]): Project configuration object.
-        json_changed (bool): Whether JSON file itself changed.
+        repo (git.Repo): Target repository object.
+        source_ref (str): Ref in source repo.
+        config (Any | None): ProjectConfig object.
+        json_changed (bool): Whether the JSON config file itself changed.
 
     Returns:
-        SyncResult | None: Result of sync operation.
+        SyncResult | None: Result of sync operation, or None when config absent.
     """
+    if not config:
+        return None
+
     has_changes = json_changed
     files_to_sync_found = False
 
-    if not config:
-        return None
     sync_pairs = config.get_doc_sync_config()
-    sync_mapping = [(pair.source, pair.target) for pair in sync_pairs]
-    files_to_sync = []
+    files_to_sync: list[tuple[str, str]] = []
 
-    for source_path, target_path in sync_mapping:
-        source_sha, _, return_code_source = run_git(
-            ["rev-parse", f"{source_ref}:{source_path}"], cwd=target_repo
-        )
-        if return_code_source != 0:
-            source_sha = None
-
-        target_sha, _, _ = run_git(["rev-parse", f"origin/main:{target_path}"], cwd=target_repo)
+    for pair in sync_pairs:
+        source_sha = _get_blob_sha(repo, source_ref, pair.source)
+        target_sha = _get_blob_sha(repo, "origin/main", pair.target)
 
         if source_sha != target_sha:
-            files_to_sync.append((source_path, target_path))
+            files_to_sync.append((pair.source, pair.target))
             files_to_sync_found = True
 
     if files_to_sync:
-        synced = sync_files_from_source(target_repo, source_ref, files_to_sync)
+        synced = sync_files_from_source(repo, source_ref, files_to_sync)
         has_changes = has_changes or synced
 
     return SyncResult(
@@ -360,12 +379,13 @@ def run_sync(
     )
 
 
-def commit_and_push_changes(commit_config: CommitConfig) -> None:
+def commit_and_push_changes(repo: git.Repo, commit_config: CommitConfig) -> None:
     """
-    Commit and push changes
+    Create a commit with the staged changes and push the branch.
 
     Args:
-        commit_config (CommitConfig): Schema of Commit.
+        repo (git.Repo): Target repository object.
+        commit_config (CommitConfig): Commit metadata.
     """
     if commit_config.json_changed and not commit_config.files_to_sync_found:
         commit_msg = (
@@ -374,24 +394,29 @@ def commit_and_push_changes(commit_config: CommitConfig) -> None:
     else:
         commit_msg = f"Sync changes from {commit_config.repo_name} PR {commit_config.pr_number}"
 
-    run_git(["commit", "-m", commit_msg], cwd=commit_config.repo_path)
-    run_git(["push", "origin", commit_config.branch_name], cwd=commit_config.repo_path)
+    repo.index.commit(commit_msg)
+    repo.remotes["origin"].push(commit_config.branch_name)
+    logger.info("Committed and pushed: %s", commit_msg)
 
 
 def create_or_update_pr(
-    target_repo: str, branch_name: str, repo_name: str, pr_number: str, repo_path: str
+    repo: git.Repo,
+    target_repo: str,
+    branch_name: str,
+    repo_name: str,
+    pr_number: str,
 ) -> None:
     """
-    Create or update PR in target repo
+    Create a new PR in target repo or comment on the existing one.
 
     Args:
-        target_repo (str): Name of source repo.
-        branch_name (str): Name of needed branch.
-        repo_name (str): Name of target repo
-        pr_number (str): Number of source PR.
-        repo_path (str): Path to repo.
+        repo (git.Repo): Target repository object (used to check for commits).
+        target_repo (str): Target repo name.
+        branch_name (str): Branch with the synced changes.
+        repo_name (str): Source repo name.
+        pr_number (str): Source PR number.
     """
-    stdout, stderr, return_code = run_gh(
+    stdout, _, return_code = run_gh(
         [
             "pr",
             "list",
@@ -406,74 +431,64 @@ def create_or_update_pr(
 
     target_pr_number = None
     if return_code == 0 and stdout:
-        pr_list = json.loads(stdout) if stdout else []
-        if pr_list and len(pr_list) > 0:
+        pr_list = json.loads(stdout)
+        if pr_list:
             target_pr_number = pr_list[0].get("number")
 
-    run_git(["fetch", "origin", "main"], cwd=repo_path)
+    ahead_commits = list(repo.iter_commits(f"origin/main..{branch_name}"))
+    has_commits = bool(ahead_commits)
 
-    stdout, stderr, return_code = run_git(
-        ["log", "--oneline", f"origin/main..{branch_name}"], cwd=repo_path
-    )
+    if not has_commits:
+        logger.info("No commits in branch %s — skipping PR creation", branch_name)
+        return
 
-    has_commits = return_code == 0 and bool(stdout and stdout.strip())
-
-    if has_commits:
-        if target_pr_number is None:
-            stdout, stderr, return_code = run_gh(
-                [
-                    "pr",
-                    "create",
-                    "--repo",
-                    f"fipl-hse/{target_repo}",
-                    "--head",
-                    branch_name,
-                    "--base",
-                    "main",
-                    "--title",
-                    f"[Automated] Sync from {repo_name} PR {pr_number}",
-                    "--body",
-                    f"Automated synchronization from {repo_name} PR #{pr_number}",
-                    "--label",
-                    "automated pr",
-                    "--assignee",
-                    "demid5111",
-                ]
-            )
-
-            if return_code == 1:
-                logger.error("Failed to create PR. Exit code: %s", return_code)
-                logger.error("stdout: %s", stdout)
-                logger.error("stderr: %s", stderr)
-                sys.exit(1)
-
-            logger.info("Created new PR in target repository")
-
-        else:
-            stdout, stderr, return_code = run_gh(
-                [
-                    "pr",
-                    "comment",
-                    str(target_pr_number),
-                    "--repo",
-                    f"fipl-hse/{target_repo}",
-                    "--body",
-                    "Automatically updated",
-                ]
-            )
-
-            if return_code != 0:
-                logger.warning("Failed to update PR %s", target_pr_number)
+    if target_pr_number is None:
+        stdout, stderr, return_code = run_gh(
+            [
+                "pr",
+                "create",
+                "--repo",
+                f"fipl-hse/{target_repo}",
+                "--head",
+                branch_name,
+                "--base",
+                "main",
+                "--title",
+                f"[Automated] Sync from {repo_name} PR {pr_number}",
+                "--body",
+                f"Automated synchronization from {repo_name} PR #{pr_number}",
+                "--label",
+                "automated pr",
+                "--assignee",
+                "demid5111",
+            ]
+        )
+        if return_code == 1:
+            logger.error("Failed to create PR. stdout: %s  stderr: %s", stdout, stderr)
+            sys.exit(1)
+        logger.info("Created new PR in target repository")
     else:
-        logger.info("No commits in branch %s - skipping PR creation", branch_name)
+        stdout, stderr, return_code = run_gh(
+            [
+                "pr",
+                "comment",
+                str(target_pr_number),
+                "--repo",
+                f"fipl-hse/{target_repo}",
+                "--body",
+                "Automatically updated",
+            ]
+        )
+        if return_code != 0:
+            logger.warning("Failed to update PR %s", target_pr_number)
 
 
 def validate_and_process_inputs() -> tuple[str, ...]:
     """
-    Validating input args and processing basic information for script work
+    Validate input args and derive basic parameters for the script.
 
     Returns:
-        tuple[str, ...]: Needed data from source repo
+        tuple[str, ...]: (repo_name, pr_number, target_repo, branch_name, gh_token)
     """
     parser = SyncArgumentParser(underscores_to_dashes=True)
     args = parser.parse_args()
@@ -494,34 +509,37 @@ def validate_and_process_inputs() -> tuple[str, ...]:
     return repo_name, pr_number, target_repo, branch_name, gh_token
 
 
-def prepare_target_repo(target_repo: str, branch_name: str, gh_token: str) -> None:
+def prepare_target_repo(target_repo: str, branch_name: str, gh_token: str) -> git.Repo:
     """
-    Prepare target repo for PR creation
+    Clone target repo, configure git identity, and checkout the working branch.
 
     Args:
         target_repo (str): Name of target repo.
-        branch_name (str): Name of branch in target repo.
-        gh_token (str): Token to process operations.
+        branch_name (str): Branch to work on.
+        gh_token (str): GitHub token.
+
+    Returns:
+        git.Repo: Fully prepared repository object.
     """
-    clone_repo(target_repo, gh_token)
-    setup_git_config(target_repo)
-    checkout_or_create_branch(branch_name, target_repo)
+    repo = clone_repo(target_repo, gh_token)
+    setup_git_config(repo)
+    checkout_or_create_branch(repo, branch_name)
+    return repo
 
 
 def main() -> None:
     """
-    Main function to create PR in target repo
+    Entry point: sync files from source PR into the target repository
     """
     repo_name, pr_number, target_repo, branch_name, gh_token = validate_and_process_inputs()
 
-    prepare_target_repo(target_repo, branch_name, gh_token)
+    repo = prepare_target_repo(target_repo, branch_name, gh_token)
 
     pr_data = get_pr_data(repo_name, pr_number)
     if not pr_data:
         logger.error("PR data in source repo not found")
         sys.exit(0)
 
-    merged_at = pr_data.mergedAt
     head_ref = pr_data.headRefName
     base_ref = pr_data.baseRefName
 
@@ -529,37 +547,33 @@ def main() -> None:
         logger.error("Could not get head branch name from PR")
         sys.exit(0)
 
-    add_remote_and_fetch(
-        "parent-repo", f"https://{gh_token}@github.com/{repo_name}.git", target_repo
-    )
-
-    if merged_at:
+    if pr_data.mergedAt:
         source_ref = f"parent-repo/{base_ref}"
-        logger.info("PR is merged, comparing %s with target main", source_ref)
+        logger.info("PR is merged — comparing %s with target main", source_ref)
     else:
         source_ref = f"parent-repo/{head_ref}"
-        logger.info("PR is open, comparing %s with target main", source_ref)
+        logger.info("PR is open — comparing %s with target main", source_ref)
 
-    run_git(["fetch", "origin", "main"], cwd=target_repo)
+    repo.remotes["origin"].fetch("main")
 
-    config, json_changed = get_json_from_source(source_ref, target_repo)
+    config, json_changed = get_json_from_source(repo, source_ref)
 
-    sync_result = run_sync(target_repo, source_ref, config, json_changed)
+    sync_result = run_sync(repo, source_ref, config, json_changed)
 
-    if sync_result.has_changes:
-        commit_config = CommitConfig(
-            target_repo,
-            branch_name,
-            repo_name,
-            pr_number,
-            sync_result.json_changed,
-            sync_result.files_to_sync_found,
-        )
-        commit_and_push_changes(commit_config)
-        create_or_update_pr(target_repo, branch_name, repo_name, pr_number, target_repo)
-    else:
+    if sync_result is None or not sync_result.has_changes:
         logger.info("No changes to commit")
         sys.exit(0)
+
+    commit_config = CommitConfig(
+        repo_path=str(repo.working_dir),
+        branch_name=branch_name,
+        repo_name=repo_name,
+        pr_number=pr_number,
+        json_changed=sync_result.json_changed,
+        files_to_sync_found=sync_result.files_to_sync_found,
+    )
+    commit_and_push_changes(repo, commit_config)
+    create_or_update_pr(repo, target_repo, branch_name, repo_name, pr_number)
 
 
 if __name__ == "__main__":
