@@ -4,6 +4,7 @@ Python tool for synchronization between source and target repositories.
 
 import json
 import os
+import shutil
 import sys
 from dataclasses import dataclass
 from datetime import datetime
@@ -144,7 +145,6 @@ def clone_repo(target_repo: str, gh_token: str) -> git.Repo:
     """
     target_path = Path(target_repo)
     if target_path.exists():
-        import shutil
 
         shutil.rmtree(target_path)
 
@@ -213,14 +213,14 @@ def add_remote_and_fetch(repo: git.Repo, remote_name: str, repo_url: str) -> git
     return remote
 
 
-def _get_blob_sha(repo: git.Repo, ref_str: str, file_path: str) -> str | None:
+def _get_blob_sha(repo: git.Repo, ref_str: str, file_path: Path) -> str | None:
     """
     Return the git object SHA for file_path at ref_str, or None if absent.
 
     Args:
         repo (git.Repo): Repository object.
         ref_str (str): A ref name resolvable by the repo.
-        file_path (str): Relative path inside the tree.
+        file_path (Path): Relative path inside the tree.
 
     Returns:
         str | None: Object SHA string, or None when the path doesn't exist.
@@ -233,17 +233,17 @@ def _get_blob_sha(repo: git.Repo, ref_str: str, file_path: str) -> str | None:
         return None
 
 
-def _read_blob(repo: git.Repo, ref_str: str, file_path: str) -> str | None:
+def _read_blob(repo: git.Repo, ref_str: str, file_path: Path) -> Any:
     """
     Return decoded text content of file_path at ref_str, or None.
 
     Args:
         repo (git.Repo): Repository object.
         ref_str (str): Ref name.
-        file_path (str): Relative path inside the tree.
+        file_path (Path): Relative path inside the tree.
 
     Returns:
-        str | None: File contents as text, or None when absent.
+        Any: File contents as text, or None when absent.
     """
     try:
         commit = repo.commit(ref_str)
