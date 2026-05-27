@@ -49,6 +49,9 @@ def remove_implementation_from_function(
         if isinstance(decl, ast.Expr) and "# stubs: keep" in ast.unparse(decl.value):
             opening_files.extend(original_declaration.body[1:])
 
+        if isinstance(decl, ast.Expr) and "# stubs: remove" in ast.unparse(decl.value):
+            continue
+
         if isinstance(decl, ast.With) and decl not in opening_files:
             if not ast.unparse(decl.items[0].context_expr.args):  # type: ignore
                 continue
@@ -178,6 +181,9 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
                 remove_implementation_from_function(class_decl, parent=decl)
 
         remove_implementation_from_function(decl)
+
+        if isinstance(decl, ast.Expr) and "# stubs: remove" in ast.unparse(decl.value):
+            continue
 
         new_decl.append(decl)
 
