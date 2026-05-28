@@ -49,9 +49,6 @@ def remove_implementation_from_function(
         if isinstance(decl, ast.Expr) and "# stubs: keep" in ast.unparse(decl.value):
             opening_files.extend(original_declaration.body[1:])
 
-        if isinstance(decl, ast.Expr) and "# stubs: remove" in ast.unparse(decl.value):
-            continue
-
         if isinstance(decl, ast.With) and decl not in opening_files:
             if not ast.unparse(decl.items[0].context_expr.args):  # type: ignore
                 continue
@@ -100,12 +97,47 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
 
     for decl_index, decl_2 in enumerate(data_2.body):
         if isinstance(decl_2, ast_comments.Comment):
+            if "# stubs: remove" in decl_2.value:
+                data.body[decl_index - 1] = []  # type: ignore
+                continue
             data.body.insert(decl_index, decl_2)
 
         if isinstance(decl_2, ast.ClassDef):
             for class_index, class_decl in enumerate(decl_2.body):
                 if isinstance(class_decl, ast_comments.Comment) and "#: " in class_decl.value:
                     data.body[decl_index].body.insert(class_index, class_decl)  # type: ignore
+
+        if isinstance(decl_2, ast.Try):
+            new_try_decl = []
+            for try_decl in decl_2.body:
+                if (
+                    isinstance(try_decl, ast_comments.Comment)
+                    and "# stubs: remove" in try_decl.value
+                ):
+                    new_try_decl.pop()
+                    continue
+                new_try_decl.append(try_decl)
+
+            data.body[decl_index - 1].body = new_try_decl  # type: ignore
+
+            for handler_index, handler in enumerate(decl_2.handlers):
+                new_except_decl = []
+                for except_decl in handler.body:
+                    if (
+                        isinstance(except_decl, ast_comments.Comment)
+                        and "# type: ignore" in except_decl.value
+                    ):
+                        continue
+                    if (
+                        isinstance(except_decl, ast_comments.Comment)
+                        and "# stubs: remove" in except_decl.value
+                    ):
+                        new_except_decl.pop()
+                        continue
+                    new_except_decl.append(except_decl)
+                data.body[decl_index - 1].handlers[  # type: ignore
+                    handler_index
+                ].body = new_except_decl
 
     for decl in data.body:
         if (
@@ -181,9 +213,6 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
                 remove_implementation_from_function(class_decl, parent=decl)
 
         remove_implementation_from_function(decl)
-
-        if isinstance(decl, ast.Expr) and "# stubs: remove" in ast.unparse(decl.value):
-            continue
 
         new_decl.append(decl)
 
