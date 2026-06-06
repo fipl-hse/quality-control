@@ -64,8 +64,16 @@ def choose_python_exe(lab_path: Path | None = None) -> Path:
         raise ValueError("Path to Python executable is None")
     if USE_VENV:
         if platform.system() == "Windows":
+            for venv_pat in ["venv", ".venv", "env", ".env"]:
+                python_exe_path = lab_path / venv_pat / "Scripts" / "python.exe"
+                if python_exe_path.exists():
+                    return python_exe_path
             python_exe_path = lab_path / "venv" / "Scripts" / "python.exe"
         else:
+            for venv_pat in ["venv", ".venv", "env", ".env"]:
+                python_exe_path = lab_path / venv_pat / "bin" / "python"
+                if python_exe_path.exists():
+                    return python_exe_path
             python_exe_path = lab_path / "venv" / "bin" / "python"
     else:
         if platform.system() == "Windows":
