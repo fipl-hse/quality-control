@@ -124,7 +124,7 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
     """
     kwargs_processed: list[str] = []
     for item in kwargs.items():
-        if item[0] in ("env", "debug", "cwd"):
+        if item[0] in ("env", "debug", "cwd", "timeout"):
             continue
         kwargs_processed.extend(map(str, item))
 
@@ -148,6 +148,8 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
         result = subprocess.run(options, capture_output=True, check=True, env=env)
     elif kwargs.get("cwd"):
         result = subprocess.run(options, capture_output=True, check=True, cwd=kwargs.get("cwd"))
+    elif kwargs.get("timeout"):
+        result = subprocess.run(options, capture_output=True, check=True, timeout=kwargs.get("timeout"))
     else:
         result = subprocess.run(options, capture_output=True, check=True)
     return (
