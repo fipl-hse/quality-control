@@ -149,7 +149,9 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
     elif kwargs.get("cwd"):
         result = subprocess.run(options, capture_output=True, check=True, cwd=kwargs.get("cwd"))
     elif kwargs.get("timeout"):
-        result = subprocess.run(options, capture_output=True, check=True, timeout=kwargs.get("timeout"))
+        result = subprocess.run(
+            options, capture_output=True, check=True, timeout=kwargs.get("timeout")
+        )
     else:
         result = subprocess.run(options, capture_output=True, check=True)
     return (

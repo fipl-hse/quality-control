@@ -84,8 +84,7 @@ def check_dependencies(
     for line in lines:
         if not re.search(compiled_pattern, line):
             logger.error(
-                f"Specific dependency in {path} "
-                f"does not conform to the template.\n{line}"
+                f"Specific dependency in {path} " f"does not conform to the template.\n{line}"
             )
             return False
     return True
