@@ -1,0 +1,11 @@
+{
+    "labs": [
+        {
+            "name": "test_lab",
+            "coverage": 99,
+            "stubs": [
+                "test.py"
+            ]
+        }
+    ]
+}
