@@ -1,9 +1,10 @@
-from quality_control.static_checks.check_black import QualityControlArgumentsParser
-from typing import Optional
-from pathlib import Path
 import os
-from quality_control.project_config import ProjectConfig
+from pathlib import Path
+from typing import Optional
+
 from quality_control.generate_stubs.generate_labs_stubs import generate_all_stubs
+from quality_control.project_config import ProjectConfig
+from quality_control.static_checks.check_black import QualityControlArgumentsParser
 
 
 def main() -> None:
@@ -28,7 +29,6 @@ def main() -> None:
             stub_path = lab_path / f"{base_name}_stub.py"
             validate_stub_path = lab_path / f"actual_{base_name}_stub.py"
 
-            # print(stub_path, validate_stub_path)
             if not (stub_path.exists() and validate_stub_path.exists()):
                 continue
 
@@ -41,6 +41,8 @@ def main() -> None:
                 print(f"{impl_file}: Stubs weren't changed")
             else:
                 print(f"{impl_file}: [WARNING] Stubs were changed")
+
+            stub_path.unlink()
 
 if __name__ == "__main__":
     main()
