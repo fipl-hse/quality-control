@@ -51,7 +51,7 @@ def run_ruff_on_paths(
         tuple[str, str, int]: stdout, stderr, exit code
     ```"""
     existing_paths = [str(p) for p in paths if p.exists()]
-    
+
     if not existing_paths:
         return "", "", 0
 
