@@ -121,7 +121,7 @@ def main() -> None:
 
     if not all_ok:
         print("\nTip: Run the UML generator locally and commit the updated assets/description.png")
-        print("Run: python admin_utils/uml/uml_diagrams_builder.py")
+        print("Run: python -m quality_control.uml_builder")
         sys.exit(1)
 
     print("\nAll diagrams are present and up-to-date")
