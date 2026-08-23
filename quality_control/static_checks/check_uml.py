@@ -31,7 +31,7 @@ def compute_png_hash(png_path: Path) -> str:
     Compute a deterministic SHA256 hash from PNG.
 
     Args:
-        png_path (Path): Raw DOT file content as a string.
+        png_path (Path): Path to the PNG file.
 
     Returns:
         str: SHA256 hex digest from PNG.
