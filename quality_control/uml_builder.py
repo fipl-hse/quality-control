@@ -23,14 +23,11 @@ import os
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
-
-# pylint: disable=wrong-import-position
+from pathlib import Path
 from quality_control.cli_unifier import _run_console_tool, handles_console_error
-from quality_control.constants import PROJECT_CONFIG_PATH
 
-# pylint: enable=wrong-import-position
+# Seek project_config.json in the root of repo, from which script is called
+PROJECT_CONFIG_PATH = Path.cwd() / "project_config.json"
 
 
 @handles_console_error()
