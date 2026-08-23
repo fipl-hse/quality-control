@@ -20,9 +20,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-from quality_control.constants import PROJECT_CONFIG_PATH
 from quality_control.project_config import Lab, ProjectConfig
 from quality_control.uml_builder import generate_uml_diagrams
+
+PROJECT_CONFIG_PATH = Path.cwd() / "project_config.json"
 
 
 def compute_png_hash(png_path: Path) -> str:
