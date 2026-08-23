@@ -334,7 +334,7 @@ def main() -> None:
     """
     args = QualityControlArgumentsParser().parse_args()
     root_dir = args.root_dir.resolve()
-    
+
     config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
     if not config_path.exists():
@@ -350,7 +350,7 @@ def main() -> None:
     for lab_info in labs:
         lab_name = lab_info["name"]
         lab_path = root_dir / lab_name
-        
+
         if not lab_path.exists():
             logger.error(f"Lab folder not found: {lab_path}")
             continue

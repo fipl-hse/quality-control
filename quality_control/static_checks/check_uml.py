@@ -132,7 +132,8 @@ def main() -> None:
     # pylint: enable=protected-access
 
     if not all_ok:
-        logger.error("\nTip: Run the UML generator locally and commit the updated assets/description.png")
+        logger.error("\nTip: Run the UML generator locally"
+        "and commit the updated assets/description.png")
         logger.error("Run: python -m quality_control.uml_builder")
         sys.exit(1)
 
