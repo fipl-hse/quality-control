@@ -20,10 +20,8 @@ Requirements:
 import ast
 import json
 import os
-import sys
 from pathlib import Path
 
-from pathlib import Path
 from quality_control.cli_unifier import _run_console_tool, handles_console_error
 
 # Seek project_config.json in the root of repo, from which script is called
