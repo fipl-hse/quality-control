@@ -20,12 +20,14 @@ Requirements:
 import ast
 import json
 import os
+import sys
 from pathlib import Path
 
 from quality_control.cli_unifier import _run_console_tool, handles_console_error
+from quality_control.console_logging import get_child_logger
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 
-# Seek project_config.json in the root of repo, from which script is called
-PROJECT_CONFIG_PATH = Path.cwd() / "project_config.json"
+logger = get_child_logger(__file__)
 
 
 @handles_console_error()
@@ -330,30 +332,34 @@ def main() -> None:
     Reads the project configuration, iterates through all registered labs,
     and triggers diagram generation for each one. Skips missing lab folders.
     """
-    if not PROJECT_CONFIG_PATH.exists():
-        print(f"Config file not found: {PROJECT_CONFIG_PATH}")
-        return
+    args = QualityControlArgumentsParser().parse_args()
+    root_dir = args.root_dir.resolve()
+    
+    config_path = (args.project_config_path or (root_dir / "project_config.json")).resolve()
 
-    with open(PROJECT_CONFIG_PATH, "r", encoding="utf-8") as f:
+    if not config_path.exists():
+        logger.error(f"Config file not found: {config_path}")
+        sys.exit(1)
+
+    with open(config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
 
-    root_dir = PROJECT_CONFIG_PATH.parent
     labs = config.get("labs", [])
-
-    print(f"Found {len(labs)} labs in config")
+    logger.info(f"Found {len(labs)} lab(s) in config")
 
     for lab_info in labs:
         lab_name = lab_info["name"]
         lab_path = root_dir / lab_name
+        
         if not lab_path.exists():
-            print(f"Lab folder not found: {lab_path}")
+            logger.error(f"Lab folder not found: {lab_path}")
             continue
 
-        print(f"\nProcessing {lab_name}...")
+        logger.info(f"Processing {lab_name}...")
         if generate_uml_diagrams(lab_path):
-            print("Diagram generated successfully")
+            logger.info("Diagram generated successfully")
         else:
-            print("Failed to generate diagram")
+            logger.error("Failed to generate diagram")
 
 
 if __name__ == "__main__":
