@@ -49,5 +49,6 @@ def main() -> None:
 
             stub_path.unlink()
 
+
 if __name__ == "__main__":
     main()

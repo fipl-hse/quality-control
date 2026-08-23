@@ -21,7 +21,7 @@ logger = get_child_logger(__file__)
 
 
 def _generate_stubs_single_module(
-    module_path: Path, root_dir: Path, project_config: ProjectConfig, exclude_imports=False
+    module_path: Path, root_dir: Path, project_config: ProjectConfig, exclude_imports: bool = False
 ) -> None:
     """
     Process single module.
@@ -43,7 +43,7 @@ def _generate_stubs_single_module(
 
 
 def generate_all_stubs(
-    project_config: ProjectConfig, root_dir: Path, exclude_imports=False
+    project_config: ProjectConfig, root_dir: Path, exclude_imports: bool = False
 ) -> None:
     """
     Generate stubs for all labs.

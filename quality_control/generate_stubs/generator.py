@@ -63,7 +63,7 @@ def remove_implementation_from_function(
 
 # pylint: disable=too-many-branches,too-many-statements,too-many-locals
 def cleanup_code(
-    source_code_path: Path, project_config: ProjectConfig, exclude_imports=False
+    source_code_path: Path, project_config: ProjectConfig, exclude_imports: bool = False
 ) -> str:
     """
     Remove implementation based on AST parsing of code.
