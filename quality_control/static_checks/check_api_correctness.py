@@ -1,3 +1,7 @@
+"""
+Check and validate that the generated lab stubs remain unchanged.
+"""
+
 from pathlib import Path
 
 from quality_control.generate_stubs.generate_labs_stubs import generate_all_stubs
@@ -6,6 +10,9 @@ from quality_control.static_checks.check_black import QualityControlArgumentsPar
 
 
 def main() -> None:
+    """
+    Check the stubs correctness
+    """
     args = QualityControlArgumentsParser()
 
     root_dir = args.root_dir.resolve()

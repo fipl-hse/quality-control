@@ -30,6 +30,8 @@ def _generate_stubs_single_module(
         module_path (Path): Path to module
         root_dir (Path): Root directory
         project_config (ProjectConfig): Project configuration
+        exclude_imports (bool): If True, removes all import statements from the parsed code.
+            Defaults to False
     """
     stub_path = module_path.parent / f"{module_path.stem}_stub{module_path.suffix}"
 
@@ -48,6 +50,9 @@ def generate_all_stubs(
 
     Args:
         project_config (ProjectConfig): Project config
+        root_dir (Path): Root directory
+        exclude_imports (bool): If True, removes all import statements from the parsed code.
+            Defaults to False
     """
     labs_config = project_config.get_labs()
 

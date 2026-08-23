@@ -71,6 +71,8 @@ def cleanup_code(
     Args:
         source_code_path (Path): Path to source code
         project_config (ProjectConfig): Project configuration
+        exclude_imports (bool): If True, removes all import statements from the parsed code.
+            Defaults to False
 
     Returns:
         str: Implementation without AST parsing of code
