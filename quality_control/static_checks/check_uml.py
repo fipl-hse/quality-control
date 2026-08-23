@@ -20,9 +20,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-from quality_control.project_config import Lab, ProjectConfig
-
 from quality_control.constants import PROJECT_CONFIG_PATH
+from quality_control.project_config import Lab, ProjectConfig
 from quality_control.uml_builder import generate_uml_diagrams
 
 

@@ -28,7 +28,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # pylint: disable=wrong-import-position
 from quality_control.cli_unifier import _run_console_tool, handles_console_error
-
 from quality_control.constants import PROJECT_CONFIG_PATH
 
 # pylint: enable=wrong-import-position
