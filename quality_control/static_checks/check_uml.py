@@ -20,10 +20,14 @@ import sys
 import tempfile
 from pathlib import Path
 
+from logging518.config import fileConfig
+
+from quality_control.console_logging import get_child_logger
 from quality_control.project_config import Lab, ProjectConfig
+from quality_control.quality_control_parser import QualityControlArgumentsParser
 from quality_control.uml_builder import generate_uml_diagrams
 
-PROJECT_CONFIG_PATH = Path.cwd() / "project_config.json"
+logger = get_child_logger(__file__)
 
 
 def compute_png_hash(png_path: Path) -> str:
@@ -61,7 +65,7 @@ def check_lab_diagram(lab_info: Lab, root_dir: Path) -> bool:
 
     committed_png = lab_path / "assets" / "description.png"
     if not committed_png.is_file():
-        print(f"Missing committed diagram: {committed_png}")
+        logger.error(f"Missing committed diagram: {committed_png}")
         return False
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -70,12 +74,12 @@ def check_lab_diagram(lab_info: Lab, root_dir: Path) -> bool:
 
         # Generate fresh PNG in tmp_lab/assets/
         if not generate_uml_diagrams(tmp_lab):
-            print(f"Failed to generate diagram for {lab_name}")
+            logger.error(f"Failed to generate diagram for {lab_name}")
             return False
 
         generated_png = tmp_lab / "assets" / "description.png"
         if not generated_png.exists():
-            print(f"Generated PNG not found: {generated_png}")
+            logger.error(f"Generated PNG not found: {generated_png}")
             return False
 
         # Compare hashes of the two PNG files
@@ -83,18 +87,18 @@ def check_lab_diagram(lab_info: Lab, root_dir: Path) -> bool:
         generated_hash = compute_png_hash(generated_png)
 
         if committed_hash != generated_hash:
-            print(f"Diagram image differs: {committed_png}")
+            logger.info(f"Diagram image differs: {committed_png}")
 
-            print(f"  Committed PNG size: {committed_png.stat().st_size} bytes")
-            print(f"  Generated PNG size: {generated_png.stat().st_size} bytes")
+            logger.info(f"  Committed PNG size: {committed_png.stat().st_size} bytes")
+            logger.info(f"  Generated PNG size: {generated_png.stat().st_size} bytes")
             committed_hash = compute_png_hash(committed_png)
             generated_hash = compute_png_hash(generated_png)
-            print(f"  Committed hash: {committed_hash}")
-            print(f"  Generated hash: {generated_hash}")
+            logger.info(f"  Committed hash: {committed_hash}")
+            logger.info(f"  Generated hash: {generated_hash}")
 
             return False
 
-        print(f"Diagram image is up-to-date: {lab_name}")
+        logger.info(f"Diagram image is up-to-date: {lab_name}")
         return True
 
 
@@ -111,20 +115,28 @@ def main() -> None:
         0 — if all diagrams are present and up-to-date,
         1 — if any diagram is missing, invalid, or outdated.
     """
-    project_config = ProjectConfig(PROJECT_CONFIG_PATH)
+    args = QualityControlArgumentsParser().parse_args()
 
-    root_dir = PROJECT_CONFIG_PATH.parent
+    root_dir = args.root_dir.resolve()
+
+    project_config_path = args.project_config_path or (root_dir / "project_config.json")
+    project_config_path = project_config_path.resolve()
+
+    toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
+    fileConfig(toml_config)
+
+    project_config = ProjectConfig(project_config_path)
 
     # pylint: disable=protected-access
     all_ok = not any(not check_lab_diagram(lab, root_dir) for lab in project_config._dto.labs)
     # pylint: enable=protected-access
 
     if not all_ok:
-        print("\nTip: Run the UML generator locally and commit the updated assets/description.png")
-        print("Run: python -m quality_control.uml_builder")
+        logger.error("\nTip: Run the UML generator locally and commit the updated assets/description.png")
+        logger.error("Run: python -m quality_control.uml_builder")
         sys.exit(1)
 
-    print("\nAll diagrams are present and up-to-date")
+    logger.info("\nAll diagrams are present and up-to-date")
     sys.exit(0)
 
 
