@@ -1,53 +1,74 @@
 """
 Check and validate that the generated lab stubs remain unchanged.
 """
-
+import sys
+from typing import Optional
 from pathlib import Path
 
-from quality_control.generate_stubs.generate_labs_stubs import generate_all_stubs
 from quality_control.project_config import ProjectConfig
 from quality_control.static_checks.check_black import QualityControlArgumentsParser
+from quality_control.generate_stubs.generator import cleanup_code
 
+
+class ApiCorrectnessArgumentsParser(QualityControlArgumentsParser):
+    """
+    CLI arguments parser.
+    """
+    reference_dir: Optional[Path] = None
 
 def main() -> None:
     """
     Check the stubs correctness
     """
-    args = QualityControlArgumentsParser()
+    args = ApiCorrectnessArgumentsParser()
 
     root_dir = args.root_dir.resolve()
-    project_config = ProjectConfig(
+    if args.reference_dir is None:
+        reference_dir = root_dir / "reference_dir"
+        reference_dir.mkdir(exist_ok=True)
+    else:
+        reference_dir = args.reference_dir.resolve()
+
+    root_config = ProjectConfig(
         (args.project_config_path or (root_dir / "project_config.json")).resolve()
     )
+    reference_config = ProjectConfig(
+        (reference_dir / "project_config.json").resolve()
+    )
 
-    generate_all_stubs(project_config, root_dir, exclude_imports=True)
+    root_lab_list = root_config.get_labs_paths(root_dir=root_dir)
+    reference_lab_list = reference_config.get_labs_paths(root_dir=reference_dir)
+    code_is_equal = True
 
-    labs_list = project_config.get_labs_paths(root_dir=root_dir)
-    for lab_path in labs_list:
+    if len(root_lab_list) != len(reference_lab_list):
+        print("different lengths of root and reference lab lists")
+        code_is_equal = False
+
+    for lab_path, reference_lab_path in zip(root_lab_list, reference_lab_list):
+        if code_is_equal == False:
+            break
+
         lab_name = lab_path.name
-        lab_config = project_config.get_lab(lab_name)
+        lab_config = root_config.get_lab(lab_name)
 
         for impl_file in lab_config.stubs:
-            print(impl_file)
+            impl_path = lab_path / impl_file
+            impl_path_reference = reference_lab_path / impl_file
 
-            base_name = Path(impl_file).stem
-            stub_path = lab_path / f"{base_name}_stub.py"
-            validate_stub_path = lab_path / f"actual_{base_name}_stub.py"
 
-            if not (stub_path.exists() and validate_stub_path.exists()):
-                continue
+            clean_code = cleanup_code(impl_path, root_config, exclude_imports=True)
+            clean_code_reference = cleanup_code(impl_path_reference, root_config, exclude_imports=True)
 
-            with open(stub_path, "r", encoding="utf-8") as f:
-                stub_code = f.read()
-            with open(validate_stub_path, "r", encoding="utf-8") as f:
-                validate_stub_code = f.read()
+            if clean_code != clean_code_reference:
+                base_name = Path(impl_file).stem
+                stub_path = lab_path / f"{base_name}_stub.py"
+                stub_path_reference = reference_lab_path / f"{base_name}_stub.py"
+                print("mismatch", stub_path, stub_path_reference)
+                code_is_equal = False
 
-            if validate_stub_code == stub_code:
-                print(f"{impl_file}: Stubs weren't changed")
-            else:
-                print(f"{impl_file}: [WARNING] Stubs were changed")
-
-            stub_path.unlink()
+    if code_is_equal:
+        print("All stubs are relevant")
+    sys.exit(not code_is_equal)
 
 
 if __name__ == "__main__":
