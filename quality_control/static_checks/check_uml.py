@@ -134,7 +134,7 @@ def main() -> None:
     if not all_ok:
         logger.error("\nTip: Run the UML generator locally"
         "and commit the updated assets/description.png")
-        logger.error("Run: python -m quality_control.uml_builder")
+        logger.error("Run: fiplconfig.build_uml")
         sys.exit(1)
 
     logger.info("\nAll diagrams are present and up-to-date")
