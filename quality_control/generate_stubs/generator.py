@@ -95,14 +95,62 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
 
     new_decl: list[stmt] = []
 
+    comments_to_delete = ["# stubs: remove", "# pragma: no cover", "# type: ignore"]
+
     for decl_index, decl_2 in enumerate(data_2.body):
         if isinstance(decl_2, ast_comments.Comment):
-            data.body.insert(decl_index, decl_2)
+            if "# stubs: remove" in decl_2.value:
+                data.body[decl_index - 1] = []  # type: ignore
+                data.body.insert(decl_index, [])  # type: ignore
+            elif decl_2.value in comments_to_delete:
+                data.body.insert(decl_index, [])  # type: ignore
+            else:
+                data.body.insert(decl_index, decl_2)
 
         if isinstance(decl_2, ast.ClassDef):
             for class_index, class_decl in enumerate(decl_2.body):
                 if isinstance(class_decl, ast_comments.Comment) and "#: " in class_decl.value:
                     data.body[decl_index].body.insert(class_index, class_decl)  # type: ignore
+
+        if isinstance(decl_2, ast.Try):
+            new_try_decl = []
+            for try_decl in decl_2.body:
+                if (
+                    isinstance(try_decl, ast_comments.Comment)
+                    and "# stubs: remove" in try_decl.value
+                ):
+                    new_try_decl.pop()
+                    continue
+
+                if (
+                    isinstance(try_decl, ast_comments.Comment)
+                    and try_decl.value in comments_to_delete
+                ):
+                    continue
+
+                new_try_decl.append(try_decl)
+
+            data.body[decl_index].body = new_try_decl  # type: ignore
+
+            new_except_decl = []
+            for handler_index, handler in enumerate(decl_2.handlers):
+                for except_decl in handler.body:
+                    if (
+                        isinstance(except_decl, ast_comments.Comment)
+                        and "# stubs: remove" in except_decl.value
+                    ):
+                        new_except_decl.pop()
+                        continue
+
+                    if (
+                        isinstance(except_decl, ast_comments.Comment)
+                        and except_decl.value in comments_to_delete
+                    ):
+                        continue
+
+                    new_except_decl.append(except_decl)
+                data.body[decl_index].handlers[handler_index].body = new_except_decl  # type: ignore
+                new_except_decl = []
 
     for decl in data.body:
         if (
