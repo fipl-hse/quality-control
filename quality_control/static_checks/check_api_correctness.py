@@ -1,20 +1,24 @@
 """
 Check and validate that the generated lab stubs remain unchanged.
 """
-import sys
-from typing import Optional
-from pathlib import Path
 
+# pylint: disable=too-many-locals
+import sys
+from pathlib import Path
+from typing import Optional
+
+from quality_control.generate_stubs.generator import cleanup_code
 from quality_control.project_config import ProjectConfig
 from quality_control.static_checks.check_black import QualityControlArgumentsParser
-from quality_control.generate_stubs.generator import cleanup_code
 
 
 class ApiCorrectnessArgumentsParser(QualityControlArgumentsParser):
     """
     CLI arguments parser.
     """
+
     reference_dir: Optional[Path] = None
+
 
 def main() -> None:
     """
@@ -32,9 +36,7 @@ def main() -> None:
     root_config = ProjectConfig(
         (args.project_config_path or (root_dir / "project_config.json")).resolve()
     )
-    reference_config = ProjectConfig(
-        (reference_dir / "project_config.json").resolve()
-    )
+    reference_config = ProjectConfig((reference_dir / "project_config.json").resolve())
 
     root_lab_list = root_config.get_labs_paths(root_dir=root_dir)
     reference_lab_list = reference_config.get_labs_paths(root_dir=reference_dir)
@@ -45,7 +47,7 @@ def main() -> None:
         code_is_equal = False
 
     for lab_path, reference_lab_path in zip(root_lab_list, reference_lab_list):
-        if code_is_equal == False:
+        if not code_is_equal:
             break
 
         lab_name = lab_path.name
@@ -55,15 +57,18 @@ def main() -> None:
             impl_path = lab_path / impl_file
             impl_path_reference = reference_lab_path / impl_file
 
-
             clean_code = cleanup_code(impl_path, root_config, exclude_imports=True)
-            clean_code_reference = cleanup_code(impl_path_reference, root_config, exclude_imports=True)
+            clean_code_reference = cleanup_code(
+                impl_path_reference, root_config, exclude_imports=True
+            )
 
             if clean_code != clean_code_reference:
                 base_name = Path(impl_file).stem
-                stub_path = lab_path / f"{base_name}_stub.py"
-                stub_path_reference = reference_lab_path / f"{base_name}_stub.py"
-                print("mismatch", stub_path, stub_path_reference)
+                print(
+                    "mismatch",
+                    lab_path / f"{base_name}_stub.py",
+                    reference_lab_path / f"{base_name}_stub.py",
+                )
                 code_is_equal = False
 
     if code_is_equal:
