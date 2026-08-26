@@ -27,7 +27,6 @@ setup(
             "fiplconfig.check_doc8=quality_control.static_checks.check_doc8:main",
             "fiplconfig.check_docstrings=quality_control.static_checks.check_docstrings:main",
             "fiplconfig.check_mypy=quality_control.static_checks.check_mypy:main",
-            "fiplconfig.check_flake8=quality_control.static_checks.check_flake8:main",
             "fiplconfig.check_actual_stubs=quality_control.static_checks.check_actual_stubs:main",
             "fiplconfig.check_lint=quality_control.static_checks.check_lint:main",
             "fiplconfig.check_ruff=quality_control.static_checks.check_ruff:main",
