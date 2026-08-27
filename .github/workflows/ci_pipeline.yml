@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Setup FIPL environment
-        uses: fipl-hse/setup-env-action@v0.13
+        uses: fipl-hse/setup-env-action@v0.13.3
       - name: Confirming everything is OK
         run: |
           ls -la venv
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Setup FIPL environment
-        uses: fipl-hse/setup-env-action@v0.13
+        uses: fipl-hse/setup-env-action@v0.13.3
       - name: Code Style
         run: |
           source venv/bin/activate
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Setup FIPL environment
-        uses: fipl-hse/setup-env-action@v0.13
+        uses: fipl-hse/setup-env-action@v0.13.3
       - name: Flake8 check
         run: |
           source venv/bin/activate
@@ -65,7 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Setup FIPL environment
-        uses: fipl-hse/setup-env-action@v0.13
+        uses: fipl-hse/setup-env-action@v0.13.3
       - name: MyPy check
         run: |
           source venv/bin/activate
