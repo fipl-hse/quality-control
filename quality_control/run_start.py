@@ -33,8 +33,8 @@ def run_start(lab_name: str, root_dir: Path) -> tuple[str, str, int]:
     """
     return _run_console_tool(
         str(choose_python_exe(lab_path=root_dir)),
-        [str("start.py")],
-        cwd=root_dir / lab_name,
+        [f"{lab_name}/start.py"],
+        cwd=root_dir,
         debug=True,
     )
 
