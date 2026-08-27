@@ -5,7 +5,6 @@ Check and validate that the generated lab stubs remain unchanged.
 # pylint: disable=too-many-locals
 import sys
 from pathlib import Path
-from typing import Optional
 
 from quality_control.generate_stubs.generator import cleanup_code
 from quality_control.project_config import ProjectConfig
