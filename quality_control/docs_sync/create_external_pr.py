@@ -535,6 +535,12 @@ def main() -> None:
 
     repo = prepare_target_repo(target_repo, branch_name, gh_token)
 
+    add_remote_and_fetch(
+        repo,
+        "parent-repo",
+        f"https://{gh_token}@github.com/{repo_name}.git",
+    )
+
     pr_data = get_pr_data(repo_name, pr_number)
     if not pr_data:
         logger.error("PR data in source repo not found")
