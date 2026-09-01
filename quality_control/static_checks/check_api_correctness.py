@@ -58,7 +58,7 @@ def main() -> None:
             current_code = cleanup_code(impl_path, project_config, exclude_imports=True)
 
             if expected_code != current_code:
-                logger.error(f"mismatch {impl_path} {reference_path}")
+                logger.error(f"Mismatch between {impl_path} and {reference_path}")
                 code_is_equal = False
 
     if code_is_equal:
