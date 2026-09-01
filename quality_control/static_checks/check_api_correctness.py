@@ -59,7 +59,9 @@ def main() -> None:
 
             if expected_code != current_code:
                 logger.error(
-                    f"Mismatch between {impl_path.relative_to(root_dir)} and {reference_path.relative_to(root_dir)}"
+                    "Mismatch between "
+                    f"{impl_path.relative_to(root_dir)} and "
+                    f"{reference_path.relative_to(root_dir)}"
                 )
                 code_is_equal = False
 
