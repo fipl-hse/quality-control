@@ -43,14 +43,14 @@ def main() -> None:
             impl_path = lab_path / impl_file
 
             if not impl_path.exists():
-                logger.error(f"Missing implementation file: {impl_path}")
+                logger.error(f"Missing implementation file: {impl_path.relative_to(root_dir)}")
                 code_is_equal = False
                 continue
 
             reference_path = lab_path / f"{impl_path.stem}_stub.py"
 
             if not reference_path.exists():
-                logger.error(f"Missing reference file: {reference_path}")
+                logger.error(f"Missing reference file: {reference_path.relative_to(root_dir)}")
                 code_is_equal = False
                 continue
 
@@ -58,7 +58,9 @@ def main() -> None:
             current_code = cleanup_code(impl_path, project_config, exclude_imports=True)
 
             if expected_code != current_code:
-                logger.error(f"Mismatch between {impl_path} and {reference_path}")
+                logger.error(
+                    f"Mismatch between {impl_path.relative_to(root_dir)} and {reference_path.relative_to(root_dir)}"
+                )
                 code_is_equal = False
 
     if code_is_equal:
