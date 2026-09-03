@@ -2,9 +2,11 @@
 Run start.
 """
 
+import os
 from pathlib import Path
 
 from logging518.config import fileConfig
+from tap import Tap
 
 from quality_control.cli_unifier import (
     _run_console_tool,
@@ -15,10 +17,6 @@ from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
-from quality_control.quality_control_parser import QualityControlArgumentsParser
-
-from tap import Tap
-import os
 
 logger = get_child_logger(__file__)
 
@@ -68,6 +66,7 @@ def check_start_content(lab_name: str, root_dir: Path) -> tuple[str, str, int]:
         debug=True,
     )
 
+
 class StartArgumentsParser(Tap):
     """
     CLI for quality control.
@@ -83,7 +82,7 @@ def main() -> None:
     """
     Main function to run start.py checks for each lab.
     """
-    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
+    args = StartArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
