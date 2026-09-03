@@ -30,29 +30,26 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    code_is_equal = True
+    passed_files = []
+    failed_files = []
 
     for lab_path in project_config.get_labs_paths(root_dir=root_dir):
-        if not code_is_equal:
-            break
-
         lab_name = lab_path.name
         lab_config = project_config.get_lab(lab_name)
 
         for impl_file in lab_config.stubs:
+            file_is_correct = True
             impl_path = lab_path / impl_file
 
             if not impl_path.exists():
                 logger.error(f"Missing implementation file: {impl_path.relative_to(root_dir)}")
-                code_is_equal = False
-                continue
+                file_is_correct = False
 
             reference_path = lab_path / f"{impl_path.stem}_stub.py"
 
             if not reference_path.exists():
                 logger.error(f"Missing reference file: {reference_path.relative_to(root_dir)}")
-                code_is_equal = False
-                continue
+                file_is_correct = False
 
             expected_code = cleanup_code(reference_path, project_config, exclude_imports=True)
             current_code = cleanup_code(impl_path, project_config, exclude_imports=True)
@@ -63,11 +60,19 @@ def main() -> None:
                     f"{impl_path.relative_to(root_dir)} and "
                     f"{reference_path.relative_to(root_dir)}"
                 )
-                code_is_equal = False
+                file_is_correct = False
 
-    if code_is_equal:
-        logger.info("All stubs are relevant")
-    sys.exit(not code_is_equal)
+            if file_is_correct:
+                passed_files.append(impl_file)
+            else:
+                failed_files.append(impl_file)
+
+    if failed_files:
+        logger.error(f"Failed files: {failed_files}")
+        sys.exit(1)
+
+    logger.info("All stubs are relevant")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
