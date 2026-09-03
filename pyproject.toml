@@ -28,7 +28,11 @@ remove_unused_variables = true
 remove_all_unused_imports = true
 exclude = [
     'venv*',
-    '*stub.py'
+    '**/main.py',
+    '**/start.py',
+    '**/service.py',
+    '**/scraper.py',
+    '**/pipeline.py'
 ]
 
 [tool.isort]

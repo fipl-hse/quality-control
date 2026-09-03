@@ -78,10 +78,10 @@ def run_coverage_subprocess(
         "coverage",
         "run",
         "--include",
-        f"{lab_path.name}/main.py,"
-        f"{lab_path.name}/scraper.py,"
-        f"{lab_path.name}/pipeline.py,"
-        f"{lab_path.name}/pos_pipeline.py",
+        f"{lab_path.name}/main_golden.py,"
+        f"{lab_path.name}/scraper_golden.py,"
+        f"{lab_path.name}/pipeline_golden.py,"
+        f"{lab_path.name}/pos_pipeline_golden.py",
         "-m",
         "pytest",
         "-m",

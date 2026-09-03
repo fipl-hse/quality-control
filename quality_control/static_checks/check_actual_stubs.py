@@ -68,8 +68,8 @@ def main() -> None:
                 code_is_equal = False
                 continue
 
-            base_name = Path(impl_file).stem
-            stub_path = lab_path / f"{base_name}_stub.py"
+            base_name = impl_file.split("golden")[0]
+            stub_path = lab_path / f"{base_name}.py"
 
             if not stub_path.exists():
                 print(f"Missing stub file: {stub_path}")

@@ -2,7 +2,10 @@
     "parser": "google",
     "include_paths": [ "../../**/*.py" ],
     "exclude_paths": [
-        "**/*_stub.py",
+        "**/main.py",
+        "**/start.py",
+        "**/scraper.py",
+        "**/pipeline.py",
         "**/service.py",
         "**/web_service_test.py",
         "../../venv/**/*.py",

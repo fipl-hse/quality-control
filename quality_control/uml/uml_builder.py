@@ -1,16 +1,16 @@
 """
 UML Diagram Generator for Labs
 
-Generates structural diagrams based exclusively on main.py in each lab.
-- Class diagrams (via AST) if main.py contains class definitions.
-- Function diagrams (via AST) if main.py contains only functions.
+Generates structural diagrams based exclusively on main_golden.py in each lab.
+- Class diagrams (via AST) if main_golden.py contains class definitions.
+- Function diagrams (via AST) if main_golden.py contains only functions.
 
 Workflow.
-1. Reads only main.py from the lab folder.
+1. Reads only main_golden.py from the lab folder.
 2. Uses AST to detect presence of classes.
 3. Generates a deterministic DOT representation.
    - For classes: shows class name, fields, methods.
-   - For functions: shows function names as nodes linked from main.py.
+   - For functions: shows function names as nodes linked from main_golden.py.
 4. Renders DOT to assets/description.png using Graphviz (dot).
 
 Requirements:
@@ -81,15 +81,15 @@ def extract_functions(py_file: Path) -> list[str]:
 
 def generate_function_diagram_dot_from_main(lab_folder: Path) -> str | None:
     """
-    Generate DOT content for function-level diagram based only on main.py.
+    Generate DOT content for function-level diagram based only on main_golden.py.
 
     Args:
         lab_folder (Path): Path to the lab directory.
 
     Returns:
-        str | None: DOT content as string, or None if main.py is missing or has no functions.
+        str | None: DOT content as string, or None if main_golden.py is missing or has no functions.
     """
-    main_py = lab_folder / "main.py"
+    main_py = lab_folder / "main_golden.py"
     if not main_py.exists():
         return None
 
@@ -102,7 +102,7 @@ def generate_function_diagram_dot_from_main(lab_folder: Path) -> str | None:
         "  graph [ordering=out, rankdir=LR, nodesep=0.4, ranksep=0.6,"
         'bgcolor=white, size="10,5!", overlap=false, splines=true];',
         '  node [shape=box, style=filled, fillcolor="#E0F0FF", fontname="Arial"];',
-        '  main [label="main.py", shape=folder, fillcolor="#FFE0E0"];',
+        '  main [label="main_golden.py", shape=folder, fillcolor="#FFE0E0"];',
     ]
 
     for func in functions:
@@ -115,7 +115,7 @@ def generate_function_diagram_dot_from_main(lab_folder: Path) -> str | None:
 
 def generate_module_diagram(lab_folder: Path, output_dir: Path) -> bool:
     """
-    Generate function-level diagram PNG from main.py.
+    Generate function-level diagram PNG from main_golden.py.
 
     Args:
         lab_folder (Path): Path to the lab directory.
@@ -141,15 +141,15 @@ def generate_module_diagram(lab_folder: Path, output_dir: Path) -> bool:
 
 def has_classes_in_main(lab_folder: Path) -> bool:
     """
-    Check if main.py in the lab contains any class definitions.
+    Check if main_golden.py in the lab contains any class definitions.
 
     Args:
         lab_folder (Path): Path to the lab directory.
 
     Returns:
-        bool: True if main.py exists and contains at least one class, False otherwise.
+        bool: True if main_golden.py exists and contains at least one class, False otherwise.
     """
-    main_py = lab_folder / "main.py"
+    main_py = lab_folder / "main_golden.py"
     if not main_py.exists():
         return False
     try:
@@ -193,7 +193,7 @@ def _extract_class_members(class_node: ast.ClassDef) -> tuple[list[str], list[st
 
 def extract_classes_from_main(main_py: Path) -> list[dict]:
     """
-    Extract class definitions from main.py for UML diagram.
+    Extract class definitions from main_golden.py for UML diagram.
 
     Each class dict contains:
     - 'name': str
@@ -201,7 +201,7 @@ def extract_classes_from_main(main_py: Path) -> list[dict]:
     - 'methods': sorted list of method names (excluding __dunder__)
 
     Args:
-        main_py (Path): Path to main.py.
+        main_py (Path): Path to main_golden.py.
 
     Returns:
         list[dict]: List of class info dictionaries.
@@ -226,15 +226,15 @@ def extract_classes_from_main(main_py: Path) -> list[dict]:
 
 def generate_class_diagram_dot_from_main(lab_folder: Path) -> str | None:
     """
-    Generate deterministic DOT content for class diagram based only on main.py.
+    Generate deterministic DOT content for class diagram based only on main_golden.py.
 
     Args:
         lab_folder (Path): Path to the lab directory.
 
     Returns:
-        str | None: DOT content as string, or None if main.py is missing or has no classes.
+        str | None: DOT content as string, or None if main_golden.py is missing or has no classes.
     """
-    main_py = lab_folder / "main.py"
+    main_py = lab_folder / "main_golden.py"
     if not main_py.exists():
         return None
 
@@ -281,7 +281,7 @@ def generate_class_diagram_dot_from_main(lab_folder: Path) -> str | None:
 
 def generate_class_diagram(lab_folder: Path, output_dir: Path) -> bool:
     """
-    Generate UML class diagram PNG from main.py.
+    Generate UML class diagram PNG from main_golden.py.
 
     Args:
         lab_folder (Path): Path to the lab directory.
@@ -307,7 +307,7 @@ def generate_class_diagram(lab_folder: Path, output_dir: Path) -> bool:
 
 def generate_uml_diagrams(lab_folder: Path) -> bool:
     """
-    Generate appropriate UML diagram for a lab based on main.py content.
+    Generate appropriate UML diagram for a lab based on main_golden.py content.
 
     Args:
         lab_folder (Path): Path to the lab directory.
