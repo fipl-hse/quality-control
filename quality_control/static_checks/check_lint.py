@@ -8,7 +8,6 @@ import re
 import sys
 from os import listdir
 from pathlib import Path
-from typing import Optional
 
 from logging518.config import fileConfig
 
@@ -30,7 +29,7 @@ class QualityControlLintArgumentsParser(QualityControlArgumentsParser):
     CLI for lint checks.
     """
 
-    repository_type: Optional[str] = None
+    repository_type: str | None = None
 
 
 def transform_score_into_lint(target_score: int) -> int:

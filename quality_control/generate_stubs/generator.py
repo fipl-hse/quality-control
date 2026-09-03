@@ -36,7 +36,7 @@ def remove_implementation_from_function(
 
     expr = original_declaration.body[0]
     if not isinstance(expr, ast.Expr) and (
-        not hasattr(expr, "value") or not isinstance(getattr(expr, "value"), ast.Constant)
+        not hasattr(expr, "value") or not isinstance(expr.value, ast.Constant)
     ):
         raise NoDocStringForAMethodError(
             f"You have to provide docstring for a method "
@@ -217,7 +217,7 @@ def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
                 decl.bases
                 and isinstance(name, ast.Name)
                 and hasattr(name, "id")
-                and getattr(name, "id") == "Exception"
+                and name.id == "Exception"
             ):
                 decl = []  # type: ignore
 

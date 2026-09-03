@@ -6,7 +6,6 @@ Check lint for code style and formatting in Python code using Ruff.
 import sys
 from os import listdir
 from pathlib import Path
-from typing import Optional
 
 from logging518.config import fileConfig
 
@@ -28,7 +27,7 @@ class QualityControlRuffArgumentsParser(QualityControlArgumentsParser):
     CLI for Ruff checks.
     """
 
-    repository_type: Optional[str] = None
+    repository_type: str | None = None
 
 
 @handles_console_error()

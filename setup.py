@@ -1,10 +1,9 @@
 from pathlib import Path
-from typing import List
 
 from setuptools import find_packages, setup
 
 
-def collect_requirements() -> List[str]:
+def collect_requirements() -> list[str]:
     requirements_file_path = Path("quality_control") / "requirements.txt"
     with requirements_file_path.open(encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
