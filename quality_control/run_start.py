@@ -17,11 +17,14 @@ from quality_control.constants import PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
 from quality_control.quality_control_parser import QualityControlArgumentsParser
 
+from tap import Tap
+import os
+
 logger = get_child_logger(__file__)
 
 
 @handles_console_error()
-def run_start(lab_name: str, root_dir: Path) -> tuple[str, str, int]:
+def run_start(lab_name: str, root_dir: Path, start_name: str) -> tuple[str, str, int]:
     """
     Run start.py script in the specified lab directory.
 
@@ -33,7 +36,7 @@ def run_start(lab_name: str, root_dir: Path) -> tuple[str, str, int]:
     """
     return _run_console_tool(
         str(choose_python_exe(lab_path=root_dir)),
-        [f"{lab_name}/start.py"],
+        [f"{lab_name}/{start_name}.py"],
         cwd=root_dir,
         debug=True,
     )
@@ -65,6 +68,16 @@ def check_start_content(lab_name: str, root_dir: Path) -> tuple[str, str, int]:
         debug=True,
     )
 
+class StartArgumentsParser(Tap):
+    """
+    CLI for quality control.
+    """
+
+    toml_config_path: Path | None = None
+    root_dir: Path | None = Path(os.getcwd())
+    project_config_path: Path | None = None
+    repository_type: str | None = None
+
 
 def main() -> None:
     """
@@ -81,6 +94,11 @@ def main() -> None:
 
     fileConfig(toml_config)
 
+    repo_type = args.repository_type
+    start_name = "start"
+    if repo_type == "admin":
+        start_name += "_golden"
+
     for lab in project_config.get_labs():
         logger.info(f"Running start.py checks for lab {lab.name}")
 
@@ -89,7 +107,8 @@ def main() -> None:
         if target_score == 0:
             logger.info("Skipping stage. Target score is 0.")
             continue
-        run_start(lab.name, root_dir=root_dir)
+
+        run_start(lab.name, root_dir=root_dir, start_name=start_name)
 
         logger.info(f"Check calling lab {lab.name} passed")
 
