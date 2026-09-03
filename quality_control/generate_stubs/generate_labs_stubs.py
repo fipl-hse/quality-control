@@ -31,7 +31,7 @@ def _generate_stubs_single_module(
         root_dir (Path): Root directory
         project_config (ProjectConfig): Project configuration
     """
-    stub_path = module_path.parent / f"{module_path.stem.split("golden")[0]}{module_path.suffix}"
+    stub_path = module_path.parent / f"{module_path.stem.split("_golden")[0]}{module_path.suffix}"
 
     source_code = cleanup_code(module_path, project_config)
     with stub_path.open(mode="w", encoding="utf-8") as f:

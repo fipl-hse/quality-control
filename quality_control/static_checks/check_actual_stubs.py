@@ -68,7 +68,7 @@ def main() -> None:
                 code_is_equal = False
                 continue
 
-            base_name = impl_file.split("golden")[0]
+            base_name = impl_file.split("_golden")[0]
             stub_path = lab_path / f"{base_name}.py"
 
             if not stub_path.exists():
