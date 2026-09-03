@@ -12,7 +12,6 @@ line-length = 100
 target-version = ['py313']
 
 [tool.ruff]
-line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
@@ -25,6 +24,7 @@ ignore = [
     "E501",
     "E203",
 ]
+line-length = 100
 
 [tool.ruff.lint.isort]
 known-third-party = ["enchant"]
