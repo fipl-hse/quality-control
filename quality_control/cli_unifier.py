@@ -124,7 +124,7 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
         tuple[str, str, int]: stdout, stderr, exit code
     """
     if kwargs.pop("debug", False):
-        options = [str(exe), *args, *kwargs]
+        options = [str(exe), *args] + [f"{kwarg}={value}" for (kwarg, value) in kwargs.items()]
         arguments = []
         for index, option in enumerate(options[1:]):
             arguments.append(
@@ -137,7 +137,6 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
             f'{" ".join([modify_path(str(exe)), *arguments])}'
         )
 
-    # Set up custom run defaults for all subprocesses
     custom_defaults = {
         "capture_output": True,
         "check": True,
