@@ -2,6 +2,8 @@
 Run tests for each lab using pytest.
 """
 
+# pylint: disable=duplicate-code
+
 from pathlib import Path
 
 from logging518.config import fileConfig
