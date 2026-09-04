@@ -51,8 +51,8 @@ def main() -> None:
                 logger.error(f"Missing reference file: {reference_path.relative_to(root_dir)}")
                 file_is_correct = False
 
-            expected_code = cleanup_code(reference_path, project_config, exclude_imports=True)
-            current_code = cleanup_code(impl_path, project_config, exclude_imports=True)
+            expected_code = cleanup_code(reference_path, project_config)
+            current_code = cleanup_code(impl_path, project_config)
 
             if expected_code != current_code:
                 logger.error(

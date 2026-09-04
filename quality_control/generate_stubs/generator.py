@@ -62,17 +62,13 @@ def remove_implementation_from_function(
 
 
 # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-def cleanup_code(
-    source_code_path: Path, project_config: ProjectConfig, exclude_imports: bool = False
-) -> str:
+def cleanup_code(source_code_path: Path, project_config: ProjectConfig) -> str:
     """
     Remove implementation based on AST parsing of code.
 
     Args:
         source_code_path (Path): Path to source code
         project_config (ProjectConfig): Project configuration
-        exclude_imports (bool): If True, removes all import statements from the parsed code.
-            Defaults to False
 
     Returns:
         str: Implementation without AST parsing of code
@@ -172,9 +168,6 @@ def cleanup_code(
                 decl = ast.parse(replacement_code)  # type: ignore
 
         if isinstance(decl, (ast.Import, ast.ImportFrom)):
-            if exclude_imports:
-                continue
-
             if (module_name := getattr(decl, "module", None)) is None:
                 module_name = decl.names[0].name
 
@@ -231,24 +224,6 @@ def cleanup_code(
         if isinstance(decl, ast.ClassDef):
             for class_decl in decl.body:
                 remove_implementation_from_function(class_decl, parent=decl)
-
-        if isinstance(decl, ast.Try) and exclude_imports:
-            decl.body = [
-                try_decl
-                for try_decl in decl.body
-                if not isinstance(try_decl, (ast.Import, ast.ImportFrom))
-            ]
-            if not decl.body:
-                continue
-
-            for handler in decl.handlers:
-                handler.body = [
-                    except_decl
-                    for except_decl in handler.body
-                    if not isinstance(except_decl, (ast.Import, ast.ImportFrom))
-                ]
-            if any(not handler.body for handler in decl.handlers):
-                continue
 
         remove_implementation_from_function(decl)
 

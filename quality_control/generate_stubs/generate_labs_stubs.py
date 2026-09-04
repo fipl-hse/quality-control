@@ -21,7 +21,7 @@ logger = get_child_logger(__file__)
 
 
 def _generate_stubs_single_module(
-    module_path: Path, root_dir: Path, project_config: ProjectConfig, exclude_imports: bool = False
+    module_path: Path, root_dir: Path, project_config: ProjectConfig
 ) -> None:
     """
     Process single module.
@@ -30,29 +30,22 @@ def _generate_stubs_single_module(
         module_path (Path): Path to module
         root_dir (Path): Root directory
         project_config (ProjectConfig): Project configuration
-        exclude_imports (bool): If True, removes all import statements from the parsed code.
-            Defaults to False
     """
     stub_path = module_path.parent / f"{module_path.stem}_stub{module_path.suffix}"
 
-    source_code = cleanup_code(module_path, project_config, exclude_imports)
+    source_code = cleanup_code(module_path, project_config)
     with stub_path.open(mode="w", encoding="utf-8") as f:
         f.write(source_code)
     format_stub_file(stub_path, root_dir=root_dir)
     sort_stub_imports(stub_path)
 
 
-def generate_all_stubs(
-    project_config: ProjectConfig, root_dir: Path, exclude_imports: bool = False
-) -> None:
+def generate_all_stubs(project_config: ProjectConfig, root_dir: Path) -> None:
     """
     Generate stubs for all labs.
 
     Args:
         project_config (ProjectConfig): Project config
-        root_dir (Path): Root directory
-        exclude_imports (bool): If True, removes all import statements from the parsed code.
-            Defaults to False
     """
     labs_config = project_config.get_labs()
 
@@ -69,7 +62,7 @@ def generate_all_stubs(
         for filename in stubs_list:
             module_path = root_dir / lab_name / filename
             logger.info(f"Processing file {filename} -> {module_path}")
-            _generate_stubs_single_module(module_path, root_dir, project_config, exclude_imports)
+            _generate_stubs_single_module(module_path, root_dir, project_config)
 
 
 def main() -> None:
