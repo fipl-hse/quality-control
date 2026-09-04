@@ -139,11 +139,17 @@ def main() -> None:
         logger.info(f"Current scope: {project_config.get_labs()}")
 
         for lab in project_config.get_labs():
+            lab_dir = root_dir / lab.name
+
+            if not lab_dir.exists():
+                logger.info(f"Skipping non-existent lab {lab.name}")
+                continue
+
             if check_skip(root_dir=root_dir, lab_path=lab.name):
                 continue
             logger.info(f"Running tests for lab {lab.name}")
 
-            target_score = get_target_score(root_dir / lab.name)
+            target_score = get_target_score(lab_dir)
             pytest_args = prepare_pytest_args(
                 lab_path=lab.name,
                 target_score=target_score,
@@ -158,6 +164,12 @@ def main() -> None:
                 )
 
         for addon in project_config.get_addons():
+            addon_dir = root_dir / addon.name
+
+            if not addon_dir.exists():
+                logger.info(f"Skipping non-existent addon {addon.name}")
+                continue
+
             if not addon.run_tests:
                 logger.info(f"Addon {addon.name} does not need to run tests")
                 continue
