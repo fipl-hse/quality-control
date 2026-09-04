@@ -82,9 +82,15 @@ def main() -> None:
     fileConfig(toml_config)
 
     for lab in project_config.get_labs():
+        lab_dir = root_dir / lab.name
+
+        if not lab_dir.exists():
+            logger.info(f"Skipping non-existent lab {lab.name}")
+            continue
+
         logger.info(f"Running start.py checks for lab {lab.name}")
 
-        target_score = get_target_score(root_dir / lab.name)
+        target_score = get_target_score(lab_dir)
 
         if target_score == 0:
             logger.info("Skipping stage. Target score is 0.")
