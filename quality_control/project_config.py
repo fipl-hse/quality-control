@@ -210,18 +210,18 @@ class ProjectConfig(ProjectConfigDTO):
         """
         return next((lab for lab in self.get_labs() if lab.name == lab_name), None)
 
-    def get_labs_paths(self, root_dir: Path = PROJECT_ROOT) -> list:
+    def get_labs_paths(self, root_dir: Path = PROJECT_ROOT) -> list[Path]:
         """
         Get labs paths.
 
         Args:
-            include_addons (bool): Include addons or not
             root_dir (Path): Root path
 
         Returns:
-            list: Paths to labs
+            list[Path]: Paths to labs that exist in the file system
         """
-        return [root_dir / lab.name for lab in self.get_labs()]
+        paths = [root_dir / lab.name for lab in self.get_labs()]
+        return [path for path in paths if path.exists()]
 
     def get_addons(self) -> list:
         """
@@ -232,7 +232,7 @@ class ProjectConfig(ProjectConfigDTO):
         """
         return sorted(self._dto.addons, key=lambda x: x.name)
 
-    def get_addons_paths(self, root_dir: Path = PROJECT_ROOT) -> list:
+    def get_addons_paths(self, root_dir: Path = PROJECT_ROOT) -> list[Path]:
         """
         Get addons paths.
 
@@ -240,9 +240,10 @@ class ProjectConfig(ProjectConfigDTO):
             root_dir (Path): Root path
 
         Returns:
-            list: Paths to addons
+            list[Path]: Paths to addons that exist in the file system
         """
-        return [root_dir / lab.name for lab in self.get_addons()]
+        paths = [root_dir / addon.name for addon in self.get_addons()]
+        return [path for path in paths if path.exists()]
 
     def get_stubs_names(self) -> Stub:
         """
