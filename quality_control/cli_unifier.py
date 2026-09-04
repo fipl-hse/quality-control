@@ -2,6 +2,7 @@
 CLI commands.
 """
 
+# pylint: disable=subprocess-run-check
 import functools
 import platform
 import re
@@ -122,15 +123,8 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
     Returns:
         tuple[str, str, int]: stdout, stderr, exit code
     """
-    kwargs_processed: list[str] = []
-    for item in kwargs.items():
-        if item[0] in ("env", "debug", "cwd", "timeout"):
-            continue
-        kwargs_processed.extend(map(str, item))
-
-    options = [str(exe), *args, *kwargs_processed]
-
     if kwargs.get("debug", False):
+        options = [str(exe), *args, *kwargs]
         arguments = []
         for index, option in enumerate(options[1:]):
             arguments.append(
@@ -143,21 +137,16 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
             f'{" ".join([modify_path(str(exe)), *arguments])}'
         )
 
-    env = kwargs.get("env")
-    if env:
-        result = subprocess.run(options, capture_output=True, check=True, env=env)
-    elif kwargs.get("timeout"):
-        result = subprocess.run(
-            options,
-            capture_output=True,
-            check=True,
-            timeout=kwargs.get("timeout"),
-            cwd=kwargs.get("cwd"),
-        )
-    elif kwargs.get("cwd"):
-        result = subprocess.run(options, capture_output=True, check=True, cwd=kwargs.get("cwd"))
-    else:
-        result = subprocess.run(options, capture_output=True, check=True)
+    # Set up custom run defaults for all subprocesses
+    custom_defaults = {
+        "capture_output": True,
+        "check": True,
+    }
+    for kwarg, value in custom_defaults.items():
+        if kwarg not in kwargs:
+            kwargs[kwarg] = value
+
+    result = subprocess.run([str(exe), *args], **kwargs)
     return (
         convert_raw_output_to_str(result.stdout),
         convert_raw_output_to_str(result.stderr),
