@@ -123,7 +123,7 @@ def _run_console_tool(exe: str, /, args: list[str], **kwargs: Any) -> tuple[str,
     Returns:
         tuple[str, str, int]: stdout, stderr, exit code
     """
-    if kwargs.get("debug", False):
+    if kwargs.pop("debug", False):
         options = [str(exe), *args, *kwargs]
         arguments = []
         for index, option in enumerate(options[1:]):
