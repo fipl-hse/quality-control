@@ -25,11 +25,12 @@ from logging518.config import fileConfig
 
 from quality_control.console_logging import get_child_logger
 from quality_control.project_config import Lab, ProjectConfig
-from quality_control.quality_control_parser import \
-    QualityControlArgumentsParser
-from quality_control.uml_builder import (
+from quality_control.quality_control_parser import QualityControlArgumentsParser
+from quality_control.uml.uml_builder import (
     generate_class_diagram_dot_from_main,
-    generate_function_diagram_dot_from_main, has_classes_in_main)
+    generate_function_diagram_dot_from_main,
+    has_classes_in_main,
+)
 
 logger = get_child_logger(__file__)
 
