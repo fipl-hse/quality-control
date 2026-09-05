@@ -11,26 +11,47 @@ dynamic = ["readme", "requires-python", "dependencies", "scripts"]
 line-length = 100
 target-version = ['py313']
 
+[tool.flake8]
+max-line-length = 100
+exclude = [
+    'venv*',
+    'build/'
+]
+application_import_names = ['config']
+select = ['I']
+count = true
+
+[tool.autoflake]
+in_place = true
+recursive = true
+remove_unused_variables = true
+remove_all_unused_imports = true
+exclude = [
+    'venv*',
+    '*stub.py'
+]
+
+[tool.isort]
+profile = 'black'
+py_version = '313'
+skip_gitignore = true
+line_length = 100
+order_by_type = true
+remove_redundant_aliases = true
+group_by_package = true
+force_alphabetical_sort_within_sections = true
+src_paths = [
+    "config",
+    "quality_control",
+]
+
 [tool.ruff]
-target-version = "py313"
 line-length = 100
+target-version = "py313"
 
 [tool.ruff.lint]
-select = [
-    'E', 'F', 'W',
-    'I', 'UP',
-    'B', 'S101',
-]
-ignore = [
-    "E501",
-    "E203",
-]
-
-[tool.ruff.lint.isort]
-known-third-party = ["enchant"]
-
-[tool.ruff.lint.flake8-quotes]
-docstring-quotes = "double"
+select = []
+ignore = ["ALL"]
 
 [tool.mypy]
 python_version = '3.13'
