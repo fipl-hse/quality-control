@@ -2,7 +2,7 @@
 Root logger configuration etc.
 """
 
-from logging import Logger, getLogger
+from logging import getLogger, Logger
 from os.path import sep
 from pathlib import Path
 
