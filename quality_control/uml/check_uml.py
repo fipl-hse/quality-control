@@ -127,14 +127,20 @@ def main() -> None:
 
     project_config = ProjectConfig(project_config_path)
 
-    # pylint: disable=protected-access
-    all_ok = not any(not check_lab_diagram(lab, root_dir) for lab in project_config._dto.labs)
-    # pylint: enable=protected-access
+    all_ok = True
+    for lab_dir in project_config.get_labs_paths(root_dir):
+        lab_name = lab_dir.name
+        lab_info = project_config.get_lab(lab_name)
+
+        if lab_info is None:
+            continue
+
+        if not check_lab_diagram(lab_info, root_dir):
+            all_ok = False
 
     if not all_ok:
-        logger.error(
-            "\nTip: Run the UML generator locally and commit the updated assets/description.png"
-        )
+        logger.error("\nTip: Run the UML generator locally "
+                     "and commit the updated assets/description.png")
         logger.error("Run: fiplconfig.build_uml")
         sys.exit(1)
 
