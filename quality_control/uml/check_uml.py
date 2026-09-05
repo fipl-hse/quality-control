@@ -128,14 +128,11 @@ def main() -> None:
     project_config = ProjectConfig(project_config_path)
 
     all_ok = True
-    for lab in project_config.get_labs():
-        lab_dir = root_dir / lab.name
+    for lab_dir in project_config.get_labs_paths(root_dir):
+        lab_name = lab_dir.name
+        lab_info = project_config.get_lab(lab_name)
 
-        if not lab_dir.exists():
-            logger.info(f"Skipping non-existent lab {lab.name} for UML check")
-            continue
-
-        if not check_lab_diagram(lab, root_dir):
+        if not check_lab_diagram(lab_info, root_dir):
             all_ok = False
 
     if not all_ok:

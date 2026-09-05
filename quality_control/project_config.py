@@ -232,6 +232,18 @@ class ProjectConfig(ProjectConfigDTO):
         """
         return sorted(self._dto.addons, key=lambda x: x.name)
 
+    def get_addon(self, addon_name: str) -> Addon | None:
+        """
+        Returns configuration of the addon.
+
+        Args:
+            addon_name (str): Name of addon
+
+        Returns:
+            Addon | None: Configuration of addon
+        """
+        return next((addon for addon in self.get_addons() if addon.name == addon_name), None)
+
     def get_addons_paths(self, root_dir: Path = PROJECT_ROOT) -> list[Path]:
         """
         Get addons paths.
