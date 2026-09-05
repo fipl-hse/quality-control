@@ -132,6 +132,9 @@ def main() -> None:
         lab_name = lab_dir.name
         lab_info = project_config.get_lab(lab_name)
 
+        if lab_info is None:
+            continue
+
         if not check_lab_diagram(lab_info, root_dir):
             all_ok = False
 
