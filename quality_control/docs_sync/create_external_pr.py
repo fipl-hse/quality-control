@@ -9,7 +9,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import git
 from logging518.config import fileConfig
@@ -38,7 +38,7 @@ class PRData(BaseModel):
     Model for information about PR
     """
 
-    mergedAt: Optional[datetime] = None
+    mergedAt: datetime | None = None
     headRefName: str
     baseRefName: str = Field(default="main")
 
@@ -65,7 +65,7 @@ class SyncConfig:
 
     target_repo: str
     changed_files: list[str]
-    json_content: Optional[dict]
+    json_content: dict | None
     commit_sha: str
 
 

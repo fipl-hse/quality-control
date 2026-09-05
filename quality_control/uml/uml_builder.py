@@ -341,7 +341,7 @@ def main() -> None:
         logger.error(f"Config file not found: {config_path}")
         sys.exit(1)
 
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         config = json.load(f)
 
     labs = config.get("labs", [])

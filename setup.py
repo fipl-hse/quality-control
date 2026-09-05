@@ -32,6 +32,7 @@ setup(
             "fiplconfig.check_flake8=quality_control.static_checks.check_flake8:main",
             "fiplconfig.check_actual_stubs=quality_control.static_checks.check_actual_stubs:main",
             "fiplconfig.check_lint=quality_control.static_checks.check_lint:main",
+            "fiplconfig.check_ruff=quality_control.static_checks.check_ruff:main",
             "fiplconfig.check_newline=quality_control.static_checks.check_newline:main",
             "fiplconfig.check_pr_name=quality_control.static_checks.check_pr_name:main",
             "fiplconfig.check_requirements=quality_control.static_checks.check_requirements:main",

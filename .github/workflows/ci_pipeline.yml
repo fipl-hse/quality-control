@@ -56,6 +56,22 @@ jobs:
           export PYTHONPATH=$(pwd)
           python -m flake8 quality_control
 
+  ruff-check:
+    name: Ruff check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [ install-dependencies ]
+
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup FIPL environment
+        uses: fipl-hse/setup-env-action@v0.13.3
+      - name: Ruff check
+        run: |
+          source venv/bin/activate
+          export PYTHONPATH=$(pwd)
+          ruff check quality_control
+
   mypy-checks:
     name: Static types checks
     runs-on: ubuntu-latest

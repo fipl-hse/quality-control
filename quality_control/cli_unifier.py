@@ -7,8 +7,9 @@ import platform
 import re
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_ROOT, USE_VENV

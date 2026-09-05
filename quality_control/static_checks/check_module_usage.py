@@ -80,7 +80,7 @@ def test_no_prohibited_modules(
     for stub in lab_config.stubs:
         import_collector = ImportsParser()
         lab_path = root_dir / Path(lab_config.name) / Path(stub)
-        with open(lab_path, "r", encoding="utf-8") as f:
+        with open(lab_path, encoding="utf-8") as f:
             import_collector.visit(ast.parse(f.read()))
 
         if not import_collector.module_imports.isdisjoint(prohibited_modules):
