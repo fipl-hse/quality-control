@@ -12,7 +12,6 @@ httpx==0.28.1
 logging518==1.0.0
 mypy==2.3.1
 pandas-stubs==3.0.5.260730
-pillow==12.3.0
 pydantic==2.13.4
 pydocstyle==6.3.0
 pydoctest==0.2.1
