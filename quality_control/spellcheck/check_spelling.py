@@ -20,7 +20,7 @@ from quality_control.quality_control_parser import QualityControlArgumentsParser
 logger = get_child_logger(__file__)
 
 
-@handles_console_error(ok_codes=(0, 1))
+@handles_console_error()
 def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
     """
     Run spelling checks on paths.
