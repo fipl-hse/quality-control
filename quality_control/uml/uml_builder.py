@@ -101,7 +101,7 @@ def generate_function_diagram_dot_from_main(lab_folder: Path) -> str | None:
         "digraph Functions {",
         "  graph [ordering=out, rankdir=LR, nodesep=0.4, ranksep=0.6,"
         'bgcolor=white, size="10,5!", overlap=false, splines=true];',
-        '  node [shape=box, style=filled, fillcolor="#E0F0FF", fontname="Arial"];',
+        '  node [shape=box, style=filled, fillcolor="#E0F0FF"];',
         '  main [label="main.py", shape=folder, fillcolor="#FFE0E0"];',
     ]
 
@@ -246,7 +246,7 @@ def generate_class_diagram_dot_from_main(lab_folder: Path) -> str | None:
         "digraph UML {",
         "  graph [ordering=out, rankdir=BT, nodesep=0.5, ranksep=0.75, bgcolor=white,"
         'size="12,8!", overlap=false, splines=true];',
-        '  node [shape=record, style=filled, fillcolor=white, fontname="Arial"];',
+        '  node [shape=record, style=filled, fillcolor=white];',
     ]
 
     relations = set()
