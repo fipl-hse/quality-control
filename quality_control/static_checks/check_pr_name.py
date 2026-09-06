@@ -7,6 +7,7 @@ import re
 import sys
 from pathlib import Path
 from re import Pattern
+from typing import Optional
 
 from logging518.config import fileConfig
 from tap import Tap
@@ -24,9 +25,9 @@ class CheckPrNameArguments(Tap):
 
     pr_name: str
     pr_author: str
-    toml_config_path: Path | None = None
-    root_dir: Path | None = Path(os.getcwd())
-    project_config_path: Path | None = None
+    toml_config_path: Optional[Path] = None
+    root_dir: Optional[Path] = Path(os.getcwd())
+    project_config_path: Optional[Path] = None
 
 
 def convert_raw_pr_name(pr_name_raw: str) -> str:

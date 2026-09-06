@@ -5,7 +5,7 @@ Check spelling in project files.
 import re
 import sys
 from pathlib import Path
-from re import Pattern
+from typing import Pattern
 
 from logging518.config import fileConfig
 
