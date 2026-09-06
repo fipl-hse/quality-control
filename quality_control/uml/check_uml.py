@@ -15,12 +15,14 @@ Workflow.
 """
 
 import hashlib
+import io
 import shutil
 import sys
 import tempfile
 from pathlib import Path
 
 from logging518.config import fileConfig
+from PIL import Image
 
 from quality_control.console_logging import get_child_logger
 from quality_control.project_config import Lab, ProjectConfig
@@ -31,16 +33,23 @@ logger = get_child_logger(__file__)
 
 
 def compute_png_hash(png_path: Path) -> str:
+    def compute_png_hash(png_path: Path) -> str:
     """
-    Compute a deterministic SHA256 hash from PNG.
+    Compute a deterministic SHA256 hash from a PNG file.
+
+    Re-encodes the image via Pillow.
+    Guarantees cross-platform hash identity for visually identical diagrams.
 
     Args:
         png_path (Path): Path to the PNG file.
 
     Returns:
-        str: SHA256 hex digest from PNG.
+        str: SHA256 hex digest of the normalized PNG data.
     """
-    return hashlib.sha256(png_path.read_bytes()).hexdigest()
+    img = Image.open(png_path)
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG", optimize=True)
+    return hashlib.sha256(buffer.getvalue()).hexdigest()
 
 
 def check_lab_diagram(lab_info: Lab, root_dir: Path) -> bool:
