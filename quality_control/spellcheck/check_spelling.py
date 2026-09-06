@@ -91,6 +91,7 @@ def main() -> None:
     fileConfig(toml_config)
 
     stdout, _, return_code = check_spelling_on_paths(task="ru", root_dir=root_dir)
+    logger.info("[DEBUG] Return code for Russian spellcheck: %s", return_code)
     missed_russian = (
         set(get_misspelled_from_stdout(stdout, russian_word_p)) if return_code else set()
     )
@@ -99,10 +100,13 @@ def main() -> None:
     missed_english = (
         set(get_misspelled_from_stdout(stdout, english_word_p)) if return_code else set()
     )
+    logger.info("[DEBUG] Return code for English spellcheck: %s", return_code)
 
     stdout, _, return_code = check_spelling_on_paths(task="docstrings", root_dir=root_dir)
+    logger.info("[DEBUG] Return code for Docstrings spellcheck: %s", return_code)
     missed_docstrings = set(get_misspelled_from_stdout(stdout)) if return_code else set()
 
+    logger.info("[DEBUG] Missed docstrings: %s, missed_russian: %s, missed_english: %s", missed_docstrings, missed_russian, missed_english)
     if not missed_docstrings and not missed_russian and not missed_english:
         logger.info("Spelling: OK")
         sys.exit(0)
