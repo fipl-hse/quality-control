@@ -33,7 +33,6 @@ logger = get_child_logger(__file__)
 
 
 def compute_png_hash(png_path: Path) -> str:
-    def compute_png_hash(png_path: Path) -> str:
     """
     Compute a deterministic SHA256 hash from a PNG file.
 
