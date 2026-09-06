@@ -22,6 +22,7 @@ setup(
     python_requires=">=3.10",
     entry_points={
         "console_scripts": [
+            "fiplconfig.check_api_correctness=quality_control.static_checks.check_api_correctness:main",
             "fiplconfig.build_uml=quality_control.uml.uml_builder:main",
             "fiplconfig.check_uml=quality_control.uml.check_uml:main",
             "fiplconfig.check_black=quality_control.static_checks.check_black:main",
