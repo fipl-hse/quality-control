@@ -94,6 +94,7 @@ def main() -> None:
     missed_russian = (
         set(get_misspelled_from_stdout(stdout, russian_word_p)) if return_code else set()
     )
+    logger.info(f"Missed Russian words: {missed_russian}")
 
     if return_code == 1 and not missed_russian:
         logger.error(f"Spelling: FAIL. Error: {stderr}")
@@ -103,6 +104,7 @@ def main() -> None:
     missed_english = (
         set(get_misspelled_from_stdout(stdout, english_word_p)) if return_code else set()
     )
+    logger.info(f"Missed English words: {missed_english}")
 
     if return_code == 1 and not missed_english:
         logger.error(f"Spelling: FAIL. Error: {stderr}")
