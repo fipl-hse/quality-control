@@ -45,22 +45,6 @@ def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
     )
 
 
-def ensure_spelling_command_succeeded(stderr: str, return_code: int) -> None:
-    """
-    Ensure that the spelling command succeeded.
-
-    Args:
-        stderr (str): stderr log
-        return_code (int): return code of the command
-
-    Raises:
-        SystemExit: If the spelling command failed
-    """
-    if return_code == 1 and "RuntimeError:" in stderr:
-        logger.error("Spelling check failed:\n%s", stderr)
-        sys.exit(1)
-
-
 def get_misspelled_from_stdout(stdout: str, additional_re_check: Pattern | None = None) -> set[str]:
     """
     Get words from the blocks of pyspelling output.
@@ -107,20 +91,29 @@ def main() -> None:
     fileConfig(toml_config)
 
     stdout, stderr, return_code = check_spelling_on_paths(task="ru", root_dir=root_dir)
-    ensure_spelling_command_succeeded(stderr, return_code)
     missed_russian = (
         set(get_misspelled_from_stdout(stdout, russian_word_p)) if return_code else set()
     )
 
+    if return_code == 1 and not missed_russian:
+        logger.error(f"Spelling: FAIL. Error: {stderr}")
+        sys.exit(1)
+
     stdout, stderr, return_code = check_spelling_on_paths(task="en", root_dir=root_dir)
-    ensure_spelling_command_succeeded(stderr, return_code)
     missed_english = (
         set(get_misspelled_from_stdout(stdout, english_word_p)) if return_code else set()
     )
 
+    if return_code == 1 and not missed_english:
+        logger.error(f"Spelling: FAIL. Error: {stderr}")
+        sys.exit(1)
+
     stdout, stderr, return_code = check_spelling_on_paths(task="docstrings", root_dir=root_dir)
-    ensure_spelling_command_succeeded(stderr, return_code)
     missed_docstrings = set(get_misspelled_from_stdout(stdout)) if return_code else set()
+
+    if return_code == 1 and not missed_docstrings:
+        logger.error(f"Spelling: FAIL. Error: {stderr}")
+        sys.exit(1)
 
     if not missed_docstrings and not missed_russian and not missed_english:
         logger.info("Spelling: OK")
