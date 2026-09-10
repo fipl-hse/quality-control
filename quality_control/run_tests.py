@@ -161,22 +161,23 @@ def main() -> None:
                     f"doesn't match any tests for {lab_name}."
                 )
 
-        for addon_dir in project_config.get_addons_paths(root_dir):
-            addon_name = addon_dir.name
-            addon_config = project_config.get_addon(addon_name)
+        for addon in project_config.get_addons():
+            addon_dir = root_dir / addon.name
 
-            if not addon_config.run_tests:
-                logger.info(f"Addon {addon_name} does not need to run tests")
+            if not addon_dir.exists():
                 continue
 
-            logger.info(f"Running tests for addon {addon_name}")
+            if not addon.run_tests:
+                logger.info(f"Addon {addon.name} does not need to run tests")
+                continue
+
+            logger.info(f"Running tests for addon {addon.name}")
 
             pytest_args = prepare_pytest_args(
-                lab_path=addon_name,
+                lab_path=addon.name,
                 target_score=10,
                 project_config_path=project_config_path,
             )
-
 
 if __name__ == "__main__":
     main()

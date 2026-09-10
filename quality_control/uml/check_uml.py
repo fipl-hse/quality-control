@@ -91,8 +91,7 @@ def check_lab_diagram(lab_info: Lab, root_dir: Path) -> bool:
 
             logger.info(f"  Committed PNG size: {committed_png.stat().st_size} bytes")
             logger.info(f"  Generated PNG size: {generated_png.stat().st_size} bytes")
-            committed_hash = compute_png_hash(committed_png)
-            generated_hash = compute_png_hash(generated_png)
+
             logger.info(f"  Committed hash: {committed_hash}")
             logger.info(f"  Generated hash: {generated_hash}")
 
