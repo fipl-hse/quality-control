@@ -113,23 +113,30 @@ class ProjectConfig(ProjectConfigDTO):
         with config_path.open(encoding="utf-8", mode="r") as config_file:
             json_content = json.load(config_file)
         self._dto = TypeAdapter(ProjectConfigDTO).validate_python(json_content)
-        self.__check_labs()
-        self.__check_addons()
+        base_dir = config_path.parent
+        self.__check_labs(base_dir)
+        self.__check_addons(base_dir)
 
-    def __check_labs(self) -> None:
+    def __check_labs(self, base_dir: Path) -> None:
         """
         Check real existence of labs in the file system and update their exists flag.
+
+        Args:
+            base_dir (Path): Base directory to check lab existence
         """
         for lab in self._dto.labs:
-            if not (PROJECT_ROOT / lab.name).exists():
+            if not (base_dir / lab.name).exists():
                 lab.exists = False
 
-    def __check_addons(self) -> None:
+    def __check_addons(self, base_dir: Path) -> None:
         """
         Check real existence of addons in the file system and update their exists flag.
+
+        Args:
+            base_dir (Path): Base directory to check addon existence
         """
         for addon in self._dto.addons:
-            if not (PROJECT_ROOT / addon.name).exists():
+            if not (base_dir / addon.name).exists():
                 addon.exists = False
 
     def get_thresholds(self) -> dict:
