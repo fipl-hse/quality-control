@@ -162,8 +162,6 @@ def main() -> None:
                 )
 
         for addon in project_config.get_addons():
-            addon_dir = root_dir / addon.name
-
             if not addon.run_tests:
                 logger.info(f"Addon {addon.name} does not need to run tests")
                 continue
