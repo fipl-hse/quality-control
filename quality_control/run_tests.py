@@ -2,6 +2,8 @@
 Run tests for each lab using pytest.
 """
 
+# pylint: disable=duplicate-code
+
 from pathlib import Path
 
 from logging518.config import fileConfig
@@ -138,14 +140,16 @@ def main() -> None:
 
         logger.info(f"Current scope: {project_config.get_labs()}")
 
-        for lab in project_config.get_labs():
-            if check_skip(root_dir=root_dir, lab_path=lab.name):
-                continue
-            logger.info(f"Running tests for lab {lab.name}")
+        for lab_dir in project_config.get_labs_paths(root_dir):
+            lab_name = lab_dir.name
 
-            target_score = get_target_score(root_dir / lab.name)
+            if check_skip(root_dir=root_dir, lab_path=lab_name):
+                continue
+            logger.info(f"Running tests for lab {lab_name}")
+
+            target_score = get_target_score(lab_dir)
             pytest_args = prepare_pytest_args(
-                lab_path=lab.name,
+                lab_path=lab_name,
                 target_score=target_score,
                 project_config_path=project_config_path,
             )
@@ -154,7 +158,7 @@ def main() -> None:
             if return_code == 5:
                 logger.info(
                     f"This combination of mark and label "
-                    f"doesn't match any tests for {lab.name}."
+                    f"doesn't match any tests for {lab_name}."
                 )
 
         for addon in project_config.get_addons():
@@ -169,7 +173,6 @@ def main() -> None:
                 target_score=10,
                 project_config_path=project_config_path,
             )
-
 
 if __name__ == "__main__":
     main()
