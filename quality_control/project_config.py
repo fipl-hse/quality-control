@@ -180,15 +180,18 @@ class ProjectConfig(ProjectConfigDTO):
         Args:
             new_thresholds (dict[str, int]): Updated thresholds
         """
-        for index, lab in enumerate(self.get_labs()):
+        for index, lab in enumerate(self.get_labs(exists_only=False)):
             self._dto.labs[index] = Lab(
                 name=lab.name,
                 coverage=new_thresholds.get(lab.name, lab.coverage),
                 stubs=lab.stubs,
+                exists=lab.exists,
             )
-        for index, addon in enumerate(self.get_addons()):
+        for index, addon in enumerate(self.get_addons(exists_only=False)):
             self._dto.addons[index] = Addon(
-                name=addon.name, coverage=new_thresholds.get(addon.name, addon.coverage)
+                name=addon.name,
+                coverage=new_thresholds.get(addon.name, addon.coverage),
+                exists=addon.exists,
             )
 
     def __str__(self) -> str:
