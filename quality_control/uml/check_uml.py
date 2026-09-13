@@ -126,16 +126,7 @@ def main() -> None:
 
     project_config = ProjectConfig(project_config_path)
 
-    all_ok = True
-    for lab_dir in project_config.get_labs_paths(root_dir):
-        lab_name = lab_dir.name
-        lab_info = project_config.get_lab(lab_name)
-
-        if lab_info is None:
-            continue
-
-        if not check_lab_diagram(lab_info, root_dir):
-            all_ok = False
+    all_ok = all(check_lab_diagram(lab, root_dir) for lab in project_config.get_labs())
 
     if not all_ok:
         logger.error(
