@@ -138,8 +138,9 @@ def main() -> None:
             all_ok = False
 
     if not all_ok:
-        logger.error("\nTip: Run the UML generator locally "
-                     "and commit the updated assets/description.png")
+        logger.error(
+            "\nTip: Run the UML generator locally and commit the updated assets/description.png"
+        )
         logger.error("Run: fiplconfig.build_uml")
         sys.exit(1)
 
