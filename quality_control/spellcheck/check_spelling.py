@@ -48,7 +48,6 @@ def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
 def run_spelling_check(
     task: str,
     root_dir: Path,
-    word_pattern: Pattern | None = None,
 ) -> tuple[set[str], str, int]:
     """
     Run spelling check for a task.
@@ -61,29 +60,22 @@ def run_spelling_check(
         root_dir=root_dir,
     )
 
-    missed_words = (
-        get_misspelled_from_stdout(stdout, word_pattern) if return_code in (0, 1) else set()
-    )
+    missed_words = get_misspelled_from_stdout(stdout) if return_code in (0, 1) else set()
 
     return missed_words, stderr, return_code
 
 
-def get_misspelled_from_stdout(stdout: str, additional_re_check: Pattern | None = None) -> set[str]:
+def get_misspelled_from_stdout(stdout: str) -> set[str]:
     """
     Get words from the blocks of pyspelling output.
-
-    Args:
-        stdout (str): stdout log
-
-    Returns:
-        set[str]: set of misspelled words
     """
     pattern = re.compile(
-        r"Misspelled words:\n<[a-zA-Z_-]+> .*: .*\n-+(?P<wrong>(([а-яА-ЯёЁa-zA-Z\-]{1,})\n?)+)"
+        r"Misspelled words:**\n**<[a-zA-Z\_-]+> .\*: .\***\n**-+(?P<wrong>(([а-яА-ЯёЁa-zA-Z**\\-**]{1,})**\n**?)+)"
     )
 
     all_misses = set()
     logger.info("Parsing words from the log.")
+
     for found in pattern.finditer(stdout):
         all_misses.update(
             [
@@ -92,10 +84,8 @@ def get_misspelled_from_stdout(stdout: str, additional_re_check: Pattern | None 
                 if word and len(word) != 80
             ]
         )
-    if additional_re_check is None:
-        return all_misses
 
-    return {word for word in all_misses if additional_re_check.search(word)}
+    return all_misses
 
 
 def check_spelling_result(
@@ -119,9 +109,6 @@ def main() -> None:
     """
     Run spellchecking for the project.
     """
-    russian_word_p = re.compile(r"[а-яА-ЯёЁ]+")
-    english_word_p = re.compile(r"[a-zA-Z]+")
-
     args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
 
     root_dir = args.root_dir.resolve()
@@ -131,12 +118,12 @@ def main() -> None:
 
     missed_russian = check_spelling_result(
         "Russian",
-        run_spelling_check("ru", root_dir, russian_word_p),
+        run_spelling_check("ru", root_dir),
     )
 
     missed_english = check_spelling_result(
         "English",
-        run_spelling_check("en", root_dir, english_word_p),
+        run_spelling_check("en", root_dir),
     )
 
     missed_docstrings = check_spelling_result(
