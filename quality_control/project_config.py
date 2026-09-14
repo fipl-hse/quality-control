@@ -33,6 +33,7 @@ class Lab:
     coverage: int = field(default_factory=int)
     settings: LabSettings | None = field(default_factory=LabSettings)
     stubs: list[str] | None = None
+    exists: bool = True
 
 
 @dataclass
@@ -45,6 +46,7 @@ class Addon:
     coverage: int = field(default_factory=int)
     need_uml: bool = False
     run_tests: bool = False
+    exists: bool = True
 
 
 @dataclass
@@ -111,6 +113,31 @@ class ProjectConfig(ProjectConfigDTO):
         with config_path.open(encoding="utf-8", mode="r") as config_file:
             json_content = json.load(config_file)
         self._dto = TypeAdapter(ProjectConfigDTO).validate_python(json_content)
+        base_dir = config_path.parent
+        self.__check_labs(base_dir)
+        self.__check_addons(base_dir)
+
+    def __check_labs(self, base_dir: Path) -> None:
+        """
+        Check real existence of labs in the file system and update their exists flag.
+
+        Args:
+            base_dir (Path): Base directory to check lab existence
+        """
+        for lab in self._dto.labs:
+            if not (base_dir / lab.name).exists():
+                lab.exists = False
+
+    def __check_addons(self, base_dir: Path) -> None:
+        """
+        Check real existence of addons in the file system and update their exists flag.
+
+        Args:
+            base_dir (Path): Base directory to check addon existence
+        """
+        for addon in self._dto.addons:
+            if not (base_dir / addon.name).exists():
+                addon.exists = False
 
     def get_thresholds(self) -> dict:
         """
@@ -160,15 +187,18 @@ class ProjectConfig(ProjectConfigDTO):
         Args:
             new_thresholds (dict[str, int]): Updated thresholds
         """
-        for index, lab in enumerate(self.get_labs()):
+        for index, lab in enumerate(self.get_labs(exists_only=False)):
             self._dto.labs[index] = Lab(
                 name=lab.name,
                 coverage=new_thresholds.get(lab.name, lab.coverage),
                 stubs=lab.stubs,
+                exists=lab.exists,
             )
-        for index, addon in enumerate(self.get_addons()):
+        for index, addon in enumerate(self.get_addons(exists_only=False)):
             self._dto.addons[index] = Addon(
-                name=addon.name, coverage=new_thresholds.get(addon.name, addon.coverage)
+                name=addon.name,
+                coverage=new_thresholds.get(addon.name, addon.coverage),
+                exists=addon.exists,
             )
 
     def __str__(self) -> str:
@@ -189,14 +219,20 @@ class ProjectConfig(ProjectConfigDTO):
         """
         return str(self._dto.model_dump_json(indent=4))  # type: ignore
 
-    def get_labs(self) -> list[Lab]:
+    def get_labs(self, exists_only: bool = True) -> list[Lab]:
         """
         Get the list of Lab objects from the configuration.
 
+        Args:
+            exists_only (bool): If True, only return labs that exist in the file system
+
         Returns:
-            list[Lab]: List of configured labs.
+            list[Lab]: List of configured labs
         """
-        return sorted(self._dto.labs, key=lambda x: x.name)
+        labs = self._dto.labs
+        if exists_only:
+            labs = [lab for lab in labs if lab.exists]
+        return sorted(labs, key=lambda x: x.name)
 
     def get_lab(self, lab_name: str) -> Lab | None:
         """
@@ -210,39 +246,54 @@ class ProjectConfig(ProjectConfigDTO):
         """
         return next((lab for lab in self.get_labs() if lab.name == lab_name), None)
 
-    def get_labs_paths(self, root_dir: Path = PROJECT_ROOT) -> list:
+    def get_labs_paths(
+        self,
+        root_dir: Path = PROJECT_ROOT,
+        exists_only: bool = True,
+    ) -> list[Path]:
         """
         Get labs paths.
 
         Args:
-            include_addons (bool): Include addons or not
             root_dir (Path): Root path
+            exists_only (bool): If True, only return paths that exist in the file
 
         Returns:
-            list: Paths to labs
+            list[Path]: Paths to labs that exist in the file system
         """
-        return [root_dir / lab.name for lab in self.get_labs()]
+        return [root_dir / lab.name for lab in self.get_labs(exists_only=exists_only)]
 
-    def get_addons(self) -> list:
+    def get_addons(self, exists_only: bool = True) -> list:
         """
         Get addons names.
+
+        Args:
+            exists_only (bool): If True, only return addons that exist in the file system
 
         Returns:
             list: Addons names
         """
-        return sorted(self._dto.addons, key=lambda x: x.name)
+        addons = self._dto.addons
+        if exists_only:
+            addons = [addon for addon in addons if addon.exists]
+        return sorted(addons, key=lambda x: x.name)
 
-    def get_addons_paths(self, root_dir: Path = PROJECT_ROOT) -> list:
+    def get_addons_paths(
+        self,
+        root_dir: Path = PROJECT_ROOT,
+        exists_only: bool = True,
+    ) -> list[Path]:
         """
         Get addons paths.
 
         Args:
             root_dir (Path): Root path
+            exists_only (bool): If True, only return paths that exist in the file system
 
         Returns:
-            list: Paths to addons
+            list[Path]: Paths to addons that exist in the file system
         """
-        return [root_dir / lab.name for lab in self.get_addons()]
+        return [root_dir / addon.name for addon in self.get_addons(exists_only=exists_only)]
 
     def get_stubs_names(self) -> Stub:
         """
