@@ -45,6 +45,29 @@ def check_spelling_on_paths(task: str, root_dir: Path) -> tuple[str, str, int]:
     )
 
 
+def run_spelling_check(
+    task: str,
+    root_dir: Path,
+    word_pattern: Pattern | None = None,
+) -> tuple[set[str], str, int]:
+    """
+    Run spelling check for a task.
+
+    Returns:
+        tuple[set[str], str, int]: missed words, stderr, exit code
+    """
+    stdout, stderr, return_code = check_spelling_on_paths(
+        task=task,
+        root_dir=root_dir,
+    )
+
+    missed_words = (
+        get_misspelled_from_stdout(stdout, word_pattern) if return_code in (0, 1) else set()
+    )
+
+    return missed_words, stderr, return_code
+
+
 def get_misspelled_from_stdout(stdout: str, additional_re_check: Pattern | None = None) -> set[str]:
     """
     Get words from the blocks of pyspelling output.
@@ -75,6 +98,23 @@ def get_misspelled_from_stdout(stdout: str, additional_re_check: Pattern | None 
     return {word for word in all_misses if additional_re_check.search(word)}
 
 
+def check_spelling_result(
+    task: str,
+    result: tuple[set[str], str, int],
+) -> set[str]:
+    """Validate spelling check result and return missed words."""
+    missed_words, stderr, return_code = result
+
+    if return_code not in (0, 1):
+        logger.error(
+            f"{task.capitalize()} spelling check failed to run. "
+            f"Exit code: {return_code}. Error: {stderr}"
+        )
+        sys.exit(1)
+
+    return missed_words
+
+
 def main() -> None:
     """
     Run spellchecking for the project.
@@ -89,68 +129,20 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    ru_stdout, ru_stderr, ru_return_code = check_spelling_on_paths(
-        task="ru",
-        root_dir=root_dir,
+    missed_russian = check_spelling_result(
+        "Russian",
+        run_spelling_check("ru", root_dir, russian_word_p),
     )
 
-    missed_russian = (
-        get_misspelled_from_stdout(
-            ru_stdout,
-            russian_word_p,
-        )
-        if ru_return_code in (0, 1)
-        else set()
+    missed_english = check_spelling_result(
+        "English",
+        run_spelling_check("en", root_dir, english_word_p),
     )
 
-    logger.info(f"Missed Russian words: {missed_russian}")
-
-    en_stdout, en_stderr, en_return_code = check_spelling_on_paths(
-        task="en",
-        root_dir=root_dir,
+    missed_docstrings = check_spelling_result(
+        "Docstring",
+        run_spelling_check("docstrings", root_dir),
     )
-
-    missed_english = (
-        get_misspelled_from_stdout(
-            en_stdout,
-            english_word_p,
-        )
-        if en_return_code in (0, 1)
-        else set()
-    )
-
-    logger.info(f"Missed English words: {missed_english}")
-
-    docstrings_stdout, docstrings_stderr, docstrings_return_code = check_spelling_on_paths(
-        task="docstrings",
-        root_dir=root_dir,
-    )
-
-    missed_docstrings = (
-        get_misspelled_from_stdout(docstrings_stdout) if docstrings_return_code in (0, 1) else set()
-    )
-
-    if ru_return_code not in (0, 1):
-        logger.error(
-            f"Russian spelling check failed to run. "
-            f"Exit code: {ru_return_code}. Error: {ru_stderr}"
-        )
-        sys.exit(1)
-
-    if en_return_code not in (0, 1):
-        logger.error(
-            f"English spelling check failed to run. "
-            f"Exit code: {en_return_code}. Error: {en_stderr}"
-        )
-        sys.exit(1)
-
-    if docstrings_return_code not in (0, 1):
-        logger.error(
-            f"Docstring spelling check failed to run. "
-            f"Exit code: {docstrings_return_code}. "
-            f"Error: {docstrings_stderr}"
-        )
-        sys.exit(1)
 
     missed_docs = missed_russian & missed_english
 
