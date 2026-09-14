@@ -69,21 +69,32 @@ def get_misspelled_from_stdout(stdout: str) -> set[str]:
     """
     Get words from the blocks of pyspelling output.
     """
-    pattern = re.compile(
-        r"Misspelled words:**\n**<[a-zA-Z\_-]+> .\*: .\***\n**-+(?P<wrong>(([а-яА-ЯёЁa-zA-Z**\\-**]{1,})**\n**?)+)"
-    )
-
+    lines = stdout.splitlines()
     all_misses = set()
+
     logger.info("Parsing words from the log.")
 
-    for found in pattern.finditer(stdout):
-        all_misses.update(
-            [
-                word.lower()
-                for word in found.group("wrong").strip().split("\n")
-                if word and len(word) != 80
-            ]
-        )
+    for index, line in enumerate(lines):
+        if line != "Misspelled words:":
+            continue
+
+        separator_index = index + 2
+        if (
+            separator_index >= len(lines)
+            or not set(lines[separator_index]) <= {"-"}
+        ):
+            continue
+
+        word_index = separator_index + 1
+
+        while word_index < len(lines):
+            word = lines[word_index].strip()
+
+            if not word or set(word) <= {"-"}:
+                break
+
+            all_misses.add(word.lower())
+            word_index += 1
 
     return all_misses
 
