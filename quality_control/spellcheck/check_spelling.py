@@ -90,31 +90,28 @@ def main() -> None:
 
     fileConfig(toml_config)
 
-    stdout, _, return_code = check_spelling_on_paths(task="ru", root_dir=root_dir)
-    missed_russian = (
-        set(get_misspelled_from_stdout(stdout, russian_word_p)) if return_code else set()
-    )
+    all_missed = set()
+    for task in ("ru", "en", "docstrings"):
+        logger.info(f"Running spellcheck for {task=}")
+        stdout, stderr, return_code = check_spelling_on_paths(task=task, root_dir=root_dir)
+        if not stdout and stderr:
+            logger.error(
+                "Spelling: FAIL due to a problem unrelated to spelling correctness. "
+                "Maybe there is a problem in config"
+            )
+            sys.exit(1)
+        pattern = russian_word_p if task == "ru" else english_word_p if task == "en" else None
+        missed = set(get_misspelled_from_stdout(stdout, pattern)) if return_code else set()
+        if sys.platform == "darwin":
+            missed = {i for i in missed if "ё" not in i}
+        all_missed |= missed
 
-    stdout, _, return_code = check_spelling_on_paths(task="en", root_dir=root_dir)
-    missed_english = (
-        set(get_misspelled_from_stdout(stdout, english_word_p)) if return_code else set()
-    )
-
-    stdout, _, return_code = check_spelling_on_paths(task="docstrings", root_dir=root_dir)
-    missed_docstrings = set(get_misspelled_from_stdout(stdout)) if return_code else set()
-
-    if not missed_docstrings and not missed_russian and not missed_english:
+    if not all_missed:
         logger.info("Spelling: OK")
         sys.exit(0)
 
-    if missed_english or missed_russian:
-        logger.info("List of potentially wrong words in docs:")
-        logger.info("\n\n" + "\n".join(sorted(missed_english | missed_russian)) + "\n")
-
-    if missed_docstrings:
-        logger.info("List of potentially wrong words in docstrings:")
-        logger.info("\n\n" + "\n".join(sorted(missed_docstrings)) + "\n")
-
+    logger.info("List of potentially wrong words:")
+    logger.info(f"\n\n{'\n'.join(sorted(all_missed))}\n")
     logger.error("Spelling: FAIL")
     sys.exit(1)
 

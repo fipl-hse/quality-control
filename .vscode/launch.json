@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run pyspelling",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "quality_control/spellcheck/check_spelling.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args":[
+                "--root-dir", "/Users/alexanderdemidovskij/Documents/hse/2026-2-level-labs-admin",
+            ],
+        }
+    ]
+}
