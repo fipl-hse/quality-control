@@ -4,9 +4,10 @@ Check and validate that the generated lab stubs remain unchanged.
 
 # pylint: disable=too-many-locals
 import sys
+import tempfile
+from pathlib import Path
 
 import git
-from pathlib import Path
 from logging518.config import fileConfig
 
 from quality_control.console_logging import get_child_logger
@@ -32,6 +33,9 @@ def main() -> None:
     project_config = ProjectConfig(
         (args.project_config_path or (root_dir / "project_config.json")).resolve()
     )
+    toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
+
+    fileConfig(toml_config)
 
     repo = git.Repo(root_dir)
     if UPSTREAM_NAME not in [remote.name for remote in repo.remotes]:
@@ -41,7 +45,6 @@ def main() -> None:
         upstream.set_url(UPSTREAM_URL)
     upstream.fetch(UPSTREAM_BRANCH)
     commit = upstream.refs[UPSTREAM_BRANCH].commit
-
 
     passed_files = []
     failed_files = []
@@ -66,7 +69,10 @@ def main() -> None:
                 failed_files.append(impl_file)
                 continue
 
-            expected_code = cleanup_code(blob.data_stream.read().decode("utf-8"), project_config)
+            with tempfile.TemporaryDirectory() as tmpdirname:
+                tmp_path = Path(tmpdirname) / impl_file
+                tmp_path.write_text(blob.data_stream.read().decode("utf-8"))
+                expected_code = cleanup_code(tmp_path, project_config)
             current_code = cleanup_code(impl_path.read_text(encoding="utf-8"), project_config)
 
             if expected_code != current_code:
