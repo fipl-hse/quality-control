@@ -17,16 +17,25 @@ from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
-UPSTREAM_URL = "https://github.com/fipl-hse/2026-2-level-labs-admin"
-UPSTREAM_NAME = "upstream"
-UPSTREAM_BRANCH = "main"
+class ApiCheckArgumentParser(QualityControlArgumentsParser):
+    """
+    CLI arguments for API correctness check.
+    """
+
+    upstream_url: str | None = "https://github.com/fipl-hse/2025-2-level-labs"
+    upstream_name: str | None = "upstream"
+    upstream_branch: str | None = "main"
 
 def main() -> None:
     """
     Check the stubs correctness
     """
 
-    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
+    args = ApiCheckArgumentParser(underscores_to_dashes=True).parse_args()
+
+    UPSTREAM_URL = args.upstream_url
+    UPSTREAM_NAME = args.upstream_name
+    UPSTREAM_BRANCH = args.upstream_branch
 
     root_dir = args.root_dir.resolve()
 
@@ -60,6 +69,8 @@ def main() -> None:
             if not impl_path.exists():
                 logger.error(f"Missing implementation file: {impl_path.relative_to(root_dir)}")
                 file_is_correct = False
+                failed_files.append(impl_file)
+                continue
 
             try:
                 blob = commit.tree / impl_path.relative_to(root_dir)
@@ -78,11 +89,9 @@ def main() -> None:
             current_code = cleanup_code(impl_path, project_config)
 
             if expected_code != current_code:
-                # logger.error(
-                #     "Mismatch between "
-                #     f"{impl_path.relative_to(root_dir)} and "
-                #     f"{reference_path.relative_to(root_dir)}"
-                # )
+                logger.error(
+                    f"Mismatch in {impl_path.relative_to(root_dir)} stub"
+                )
                 file_is_correct = False
 
             if file_is_correct:
@@ -92,6 +101,7 @@ def main() -> None:
 
     if failed_files:
         logger.error(f"Failed files: {failed_files}")
+        logger.info(f"Passed files: {passed_files}")
         sys.exit(1)
 
     logger.info("All stubs are relevant")
