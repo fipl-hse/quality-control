@@ -22,9 +22,9 @@ class ApiCheckArgumentParser(QualityControlArgumentsParser):
     CLI arguments for API correctness check.
     """
 
-    upstream_url: str | None = "https://github.com/fipl-hse/2025-2-level-labs"
-    upstream_name: str | None = "upstream"
-    upstream_branch: str | None = "main"
+    upstream_url: str = "https://github.com/fipl-hse/2025-2-level-labs"
+    upstream_name: str = "upstream"
+    upstream_branch: str = "main"
 
 def main() -> None:
     """
@@ -32,13 +32,7 @@ def main() -> None:
     """
 
     args = ApiCheckArgumentParser(underscores_to_dashes=True).parse_args()
-
-    UPSTREAM_URL = args.upstream_url
-    UPSTREAM_NAME = args.upstream_name
-    UPSTREAM_BRANCH = args.upstream_branch
-
     root_dir = args.root_dir.resolve()
-
     project_config = ProjectConfig(
         (args.project_config_path or (root_dir / "project_config.json")).resolve()
     )
@@ -47,13 +41,13 @@ def main() -> None:
     fileConfig(toml_config)
 
     repo = git.Repo(root_dir)
-    if UPSTREAM_NAME not in [remote.name for remote in repo.remotes]:
-        upstream = repo.create_remote(UPSTREAM_NAME, UPSTREAM_URL)
+    if args.upstream_name not in [remote.name for remote in repo.remotes]:
+        upstream = repo.create_remote(args.upstream_name, args.upstream_url)
     else:
-        upstream = repo.remotes[UPSTREAM_NAME]
-        upstream.set_url(UPSTREAM_URL)
-    upstream.fetch(UPSTREAM_BRANCH)
-    commit = upstream.refs[UPSTREAM_BRANCH].commit
+        upstream = repo.remotes[args.upstream_name]
+        upstream.set_url(args.upstream_url)
+    upstream.fetch(args.upstream_branch)
+    commit = upstream.refs[args.upstream_branch].commit
 
     passed_files = []
     failed_files = []
