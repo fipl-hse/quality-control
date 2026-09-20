@@ -17,37 +17,30 @@ from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
-class ApiCheckArgumentParser(QualityControlArgumentsParser):
-    """
-    CLI arguments for API correctness check.
-    """
-
-    upstream_url: str = "https://github.com/fipl-hse/2025-2-level-labs"
-    upstream_name: str = "upstream"
-    upstream_branch: str = "main"
 
 def main() -> None:
     """
     Check the stubs correctness
     """
 
-    args = ApiCheckArgumentParser(underscores_to_dashes=True).parse_args()
+    args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
     root_dir = args.root_dir.resolve()
     project_config = ProjectConfig(
         (args.project_config_path or (root_dir / "project_config.json")).resolve()
     )
+    api_check_config = project_config.get_api_check_config()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
     fileConfig(toml_config)
 
     repo = git.Repo(root_dir)
-    if args.upstream_name not in [remote.name for remote in repo.remotes]:
-        upstream = repo.create_remote(args.upstream_name, args.upstream_url)
+    if api_check_config.upstream_name not in [remote.name for remote in repo.remotes]:
+        upstream = repo.create_remote(api_check_config.upstream_name, api_check_config.upstream_url)
     else:
-        upstream = repo.remotes[args.upstream_name]
-        upstream.set_url(args.upstream_url)
-    upstream.fetch(args.upstream_branch)
-    commit = upstream.refs[args.upstream_branch].commit
+        upstream = repo.remotes[api_check_config.upstream_name]
+        upstream.set_url(api_check_config.upstream_url)
+    upstream.fetch(api_check_config.upstream_branch)
+    commit = upstream.refs[api_check_config.upstream_branch].commit
 
     passed_files = []
     failed_files = []

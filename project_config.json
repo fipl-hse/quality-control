@@ -7,5 +7,10 @@
                 "test.py"
             ]
         }
-    ]
+    ],
+    "api_check_config": {
+        "upstream_url": "https://github.com/fipl-hse/2026-2-level-labs-admin",
+        "upstream_name": "upstream",
+        "upstream_branch": "main"
+    }
 }

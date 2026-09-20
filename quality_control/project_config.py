@@ -61,6 +61,16 @@ class Repository:
 
 
 @dataclass
+class ApiCheckConfig:
+    """
+    BaseModel for API check configuration.
+    """
+    upstream_url: str
+    upstream_name: str
+    upstream_branch: str
+
+
+@dataclass
 class Stub:
     """
     BaseModel for stubs configuration.
@@ -89,6 +99,7 @@ class ProjectConfigDTO:
     labs: list[Lab] = field(default_factory=list[Lab])
     addons: list[Addon] = field(default_factory=list[Addon])
     repository: Repository = field(default_factory=Repository)
+    api_check_config: ApiCheckConfig = field(default_factory=ApiCheckConfig)
     stubs_config: Stub = field(default_factory=Stub)
     doc_sync_config: list[SyncPathsPair] = field(default_factory=list[SyncPathsPair])
     newline_config: list[str] = field(default_factory=list)
@@ -294,6 +305,15 @@ class ProjectConfig(ProjectConfigDTO):
             list[Path]: Paths to addons that exist in the file system
         """
         return [root_dir / addon.name for addon in self.get_addons(exists_only=exists_only)]
+
+    def get_api_check_config(self) -> ApiCheckConfig:
+        """
+        Returns the configuration for API check.
+
+        Returns:
+            ApiCheckConfig: The API check configuration object.
+        """
+        return self._dto.api_check_config
 
     def get_stubs_names(self) -> Stub:
         """
