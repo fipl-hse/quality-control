@@ -64,7 +64,9 @@ def main() -> None:
             try:
                 blob = commit.tree / impl_path.relative_to(root_dir)
             except KeyError:
-                logger.error(f"Missing referenece in upstream commit file: {impl_path.relative_to(root_dir)}")
+                logger.error(
+                    f"Missing referenece in upstream commit file: {impl_path.relative_to(root_dir)}"
+                )
                 file_is_correct = False
                 failed_files.append(impl_file)
                 continue
@@ -73,7 +75,7 @@ def main() -> None:
                 tmp_path = Path(tmpdirname) / impl_file
                 tmp_path.write_text(blob.data_stream.read().decode("utf-8"))
                 expected_code = cleanup_code(tmp_path, project_config)
-            current_code = cleanup_code(impl_path.read_text(encoding="utf-8"), project_config)
+            current_code = cleanup_code(impl_path, project_config)
 
             if expected_code != current_code:
                 # logger.error(
