@@ -33,20 +33,6 @@ class QualityControlLintArgumentsParser(QualityControlArgumentsParser):
     repository_type: Optional[str] = None
 
 
-def transform_score_into_lint(target_score: int) -> int:
-    """
-    Transform target s into lint.
-
-    Args:
-         target_score (int): Desired score
-
-    Returns:
-        int: Lint score
-    """
-    target_score_to_lint_score = {10: 10, 8: 10, 6: 7, 4: 5}
-    return target_score_to_lint_score.get(target_score, 0)
-
-
 def is_passed(lint_output: str, target_lint_level: int) -> bool:
     """
     Determine whether lint level is passed.
@@ -108,7 +94,9 @@ def check_lint_on_paths(
     return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), lint_args, debug=True)
 
 
-def check_lint_level(lint_output: str, target_score: int) -> bool:
+def check_lint_level(
+    lint_output: str, target_score: int, pylint_scores: dict[int, float]
+) -> bool:
     """
     Run lint level check for the project.
 
@@ -120,7 +108,7 @@ def check_lint_level(lint_output: str, target_score: int) -> bool:
         bool: True if target score corresponding lint score, False otherwise
     """
     score = int(target_score)
-    target_lint_level = transform_score_into_lint(score)
+    target_lint_level = pylint_scores.get(score, None)
 
     if not target_lint_level:
         logger.error("\nInvalid value for target score: accepted are 4, 6, 8, 10.\n")
@@ -157,6 +145,8 @@ def main() -> None:
 
     check_is_failed = False
 
+    default_pylint_scores = {4: 5.0, 6: 7.0, 8: 10.0, 10: 10.0}
+
     addons_paths = project_config.get_addons_paths(root_dir=root_dir)
     if addons_paths:
         stdout, _, _ = check_lint_on_paths(
@@ -165,14 +155,13 @@ def main() -> None:
             exit_zero=True,
             root_dir=root_dir,
         )
-        if not check_lint_level(stdout, 10):
+        if not check_lint_level(stdout, 10, default_pylint_scores):
             msg = ", ".join(str(i) for i in addons_paths)
             logger.info(f"Running lint on {msg} failed!")
             check_is_failed = True
 
     labs_list = project_config.get_labs_paths(root_dir=root_dir)
     for lab_path in labs_list:
-
         if "settings.json" in listdir(lab_path):
             target_score = LabSettings(root_dir / f"{lab_path}/settings.json").target_score
             if target_score == 0:
@@ -187,7 +176,11 @@ def main() -> None:
                 exit_zero=True,
                 root_dir=root_dir,
             )
-            if not check_lint_level(stdout, target_score):
+
+            pylint_scores = project_config.get_pylint_target_scores(lab_path.name)
+            if not pylint_scores:
+                pylint_scores = default_pylint_scores
+            if not check_lint_level(stdout, target_score, pylint_scores):
                 check_is_failed = True
 
     if check_is_failed:
