@@ -33,13 +33,13 @@ class QualityControlLintArgumentsParser(QualityControlArgumentsParser):
     repository_type: Optional[str] = None
 
 
-def is_passed(lint_output: str, target_lint_level: int) -> bool:
+def is_passed(lint_output: str, target_lint_level: float) -> bool:
     """
     Determine whether lint level is passed.
 
     Args:
         lint_output (str): Lint output
-        target_lint_level (int): Lint score
+        target_lint_level (float): Lint score
 
     Returns:
         bool: Lint check passed or not
@@ -94,9 +94,7 @@ def check_lint_on_paths(
     return _run_console_tool(str(choose_python_exe(lab_path=root_dir)), lint_args, debug=True)
 
 
-def check_lint_level(
-    lint_output: str, target_score: int, pylint_scores: dict[int, float]
-) -> bool:
+def check_lint_level(lint_output: str, target_score: int, pylint_scores: dict[int, float]) -> bool:
     """
     Run lint level check for the project.
 

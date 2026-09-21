@@ -34,7 +34,7 @@ class Lab:
     settings: LabSettings | None = field(default_factory=LabSettings)
     stubs: list[str] | None = None
     exists: bool = True
-    pylint_target_scores: dict[int, float] | None = None
+    pylint_target_scores: dict[str, float] | None = None
 
 
 @dataclass
@@ -332,11 +332,13 @@ class ProjectConfig(ProjectConfigDTO):
         """
         return self._dto.prohibited_modules
 
-    def get_pylint_target_scores(self, lab_name: str) -> list[int]:
+    def get_pylint_target_scores(self, lab_name: str) -> dict[int, float]:
         """
         Returns target scores for pylint check.
 
         Returns:
             list[str]: List of modules.
         """
-        return self.get_lab(lab_name).pylint_target_scores
+        return {
+            int(mark): score for mark, score in self.get_lab(lab_name).pylint_target_scores.items()
+        }
