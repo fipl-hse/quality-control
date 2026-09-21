@@ -143,8 +143,6 @@ def main() -> None:
 
     check_is_failed = False
 
-    default_pylint_scores = {4: 5.0, 6: 7.0, 8: 10.0, 10: 10.0}
-
     addons_paths = project_config.get_addons_paths(root_dir=root_dir)
     if addons_paths:
         stdout, _, _ = check_lint_on_paths(
@@ -153,7 +151,9 @@ def main() -> None:
             exit_zero=True,
             root_dir=root_dir,
         )
-        if not check_lint_level(stdout, 10, default_pylint_scores):
+        if not check_lint_level(
+            stdout, 10, project_config.get_pylint_target_scores(addons_paths[0].name)
+        ):
             msg = ", ".join(str(i) for i in addons_paths)
             logger.info(f"Running lint on {msg} failed!")
             check_is_failed = True
@@ -176,8 +176,6 @@ def main() -> None:
             )
 
             pylint_scores = project_config.get_pylint_target_scores(lab_path.name)
-            if not pylint_scores:
-                pylint_scores = default_pylint_scores
             if not check_lint_level(stdout, target_score, pylint_scores):
                 check_is_failed = True
 

@@ -339,6 +339,14 @@ class ProjectConfig(ProjectConfigDTO):
         Returns:
             list[str]: List of modules.
         """
-        return {
-            int(mark): score for mark, score in self.get_lab(lab_name).pylint_target_scores.items()
-        }
+        default_pylint_scores = {4: 5.0, 6: 7.0, 8: 10.0, 10: 10.0}
+
+        lab = self.get_lab(lab_name)
+        if lab is None:
+            return default_pylint_scores
+
+        scores = lab.pylint_target_scores
+        if not scores:
+            return default_pylint_scores
+
+        return {int(mark): score for mark, score in scores.items()}
