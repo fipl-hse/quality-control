@@ -22,6 +22,7 @@ setup(
     python_requires=">=3.10",
     entry_points={
         "console_scripts": [
+            "fiplconfig.check_api_correctness=quality_control.static_checks.check_api_correctness:main",
             "fiplconfig.build_uml=quality_control.uml.uml_builder:main",
             "fiplconfig.check_uml=quality_control.uml.check_uml:main",
             "fiplconfig.check_black=quality_control.static_checks.check_black:main",
@@ -32,6 +33,7 @@ setup(
             "fiplconfig.check_flake8=quality_control.static_checks.check_flake8:main",
             "fiplconfig.check_actual_stubs=quality_control.static_checks.check_actual_stubs:main",
             "fiplconfig.check_lint=quality_control.static_checks.check_lint:main",
+            "fiplconfig.check_ruff=quality_control.static_checks.check_ruff:main",
             "fiplconfig.check_newline=quality_control.static_checks.check_newline:main",
             "fiplconfig.check_pr_name=quality_control.static_checks.check_pr_name:main",
             "fiplconfig.check_requirements=quality_control.static_checks.check_requirements:main",
