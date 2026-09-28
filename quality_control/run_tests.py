@@ -81,24 +81,23 @@ def run_pytest(root_dir: Path, pytest_args: list[str]) -> tuple[str, str, int]:
     )
 
 
-def check_skip(root_dir: Path, lab_path: str) -> bool:
+def check_skip(root_dir: Path, lab_name: str) -> bool:
     """
     Exit if skip conditions are met.
 
     Args:
-        lab_path (str): Path to the lab.
+        lab_name (str): Path to the lab.
 
     Returns:
         bool: True if should be skipped
     """
-    if lab_path:
-        score_path = root_dir / lab_path
-        score = get_target_score(lab_path=score_path)
-        if score == 0:
-            logger.info(f"Skipping check due to no mark for lab {lab_path}.")
-            return True
+    lab_path = root_dir / lab_name
+    score = get_target_score(lab_path=lab_path)
+    if score == 0:
+        logger.info(f"Skipping check due to no mark for lab {lab_name}.")
+        return True
 
-    logger.info(f"No special reasons for skipping {lab_path}!")
+    logger.info(f"No special reasons for skipping {lab_name}!")
     return False
 
 
@@ -116,7 +115,7 @@ def main() -> None:
     fileConfig(toml_config)
 
     if args.lab_path:
-        if check_skip(root_dir=root_dir, lab_path=args.lab_path):
+        if check_skip(root_dir=root_dir, lab_name=args.lab_path):
             return
         target_score = get_target_score(root_dir / args.lab_path)
         pytest_args = prepare_pytest_args(
@@ -139,11 +138,12 @@ def main() -> None:
         logger.info(f"Current scope: {project_config.get_labs()}")
 
         for lab in project_config.get_labs():
-            if check_skip(root_dir=root_dir, lab_path=lab.name):
-                continue
             logger.info(f"Running tests for lab {lab.name}")
 
-            target_score = get_target_score(root_dir / lab.name)
+            if check_skip(root_dir=root_dir, lab_name=lab.name):
+                continue
+
+            target_score = get_target_score(lab_path=root_dir / lab.name)
             pytest_args = prepare_pytest_args(
                 lab_path=lab.name,
                 target_score=target_score,

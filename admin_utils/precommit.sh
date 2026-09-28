@@ -29,4 +29,4 @@ mypy "${DIRS_TO_CHECK[@]}"
 
 python -m flake8 "${DIRS_TO_CHECK[@]}"
 
-# python quality_control/static_checks/check_requirements.py
+python quality_control/static_checks/check_requirements.py

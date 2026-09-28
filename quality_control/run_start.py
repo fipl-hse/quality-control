@@ -11,11 +11,11 @@ from quality_control.cli_unifier import (
     choose_python_exe,
     handles_console_error,
 )
-from quality_control.collect_coverage.run_coverage import get_target_score
 from quality_control.console_logging import get_child_logger
 from quality_control.constants import PROJECT_ROOT
 from quality_control.project_config import ProjectConfig
 from quality_control.quality_control_parser import QualityControlArgumentsParser
+from quality_control.run_tests import check_skip
 
 logger = get_child_logger(__file__)
 
@@ -84,11 +84,9 @@ def main() -> None:
     for lab in project_config.get_labs():
         logger.info(f"Running start.py checks for lab {lab.name}")
 
-        target_score = get_target_score(root_dir / lab.name)
-
-        if target_score == 0:
-            logger.info("Skipping stage. Target score is 0.")
+        if check_skip(root_dir=root_dir, lab_name=lab.name):
             continue
+
         run_start(lab.name, root_dir=root_dir)
 
         logger.info(f"Check calling lab {lab.name} passed")

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fiplconfig"
-version = "0.2.1"
+version = "0.3.0"
 dynamic = ["readme", "requires-python", "dependencies", "scripts"]
 
 [tool.black]
@@ -44,6 +44,14 @@ src_paths = [
     "config",
     "quality_control",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = []
+ignore = ["ALL"]
 
 [tool.mypy]
 python_version = '3.13'
