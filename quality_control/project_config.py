@@ -98,7 +98,7 @@ class ProjectConfigDTO:
     labs: list[Lab] = field(default_factory=list[Lab])
     addons: list[Addon] = field(default_factory=list[Addon])
     repository: Repository = field(default_factory=Repository)
-    api_check_config: ApiCheckConfig = field(default_factory=ApiCheckConfig)
+    api_check: ApiCheckConfig = field(default_factory=ApiCheckConfig)
     stubs_config: Stub = field(default_factory=Stub)
     doc_sync_config: list[SyncPathsPair] = field(default_factory=list[SyncPathsPair])
     newline_config: list[str] = field(default_factory=list)
@@ -312,7 +312,7 @@ class ProjectConfig(ProjectConfigDTO):
         Returns:
             ApiCheckConfig: The API check configuration object.
         """
-        return self._dto.api_check_config
+        return self._dto.api_check
 
     def get_stubs_names(self) -> Stub:
         """
