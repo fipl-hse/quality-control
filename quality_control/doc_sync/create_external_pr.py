@@ -496,7 +496,7 @@ def validate_and_process_inputs() -> SyncInputs:
         work_dir = args.work_dir.resolve()
         work_dir.mkdir(parents=True, exist_ok=True)
     else:
-        work_dir = Path(tempfile.mkdtemp(prefix="docs_sync_"))
+        work_dir = Path(tempfile.mkdtemp(prefix="doc_sync_"))
     logger.info("Working directory: %s", work_dir)
 
     return SyncInputs(
