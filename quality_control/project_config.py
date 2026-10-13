@@ -66,8 +66,7 @@ class ApiCheckConfig:
     BaseModel for API check configuration.
     """
     upstream_url: str = field(default_factory=str)
-    upstream_name: str = field(default_factory=str)
-    upstream_branch: str = field(default_factory=str)
+    upstream_branch: str = "main"
 
 
 @dataclass

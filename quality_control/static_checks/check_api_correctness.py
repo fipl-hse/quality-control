@@ -17,6 +17,7 @@ from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
+UPSTREAM_NAME = "temp-upstream"
 
 def main() -> None:
     """
@@ -34,13 +35,12 @@ def main() -> None:
     fileConfig(toml_config)
 
     repo = git.Repo(root_dir)
-    if api_check_config.upstream_name not in [remote.name for remote in repo.remotes]:
-        upstream = repo.create_remote(api_check_config.upstream_name, api_check_config.upstream_url)
-    else:
-        upstream = repo.remotes[api_check_config.upstream_name]
-        upstream.set_url(api_check_config.upstream_url)
-    upstream.fetch(api_check_config.upstream_branch)
-    commit = upstream.refs[api_check_config.upstream_branch].commit
+    upstream = repo.create_remote(UPSTREAM_NAME, api_check_config.upstream_url)
+    try:
+        upstream.fetch(api_check_config.upstream_branch)
+        commit = upstream.refs[api_check_config.upstream_branch].commit
+    finally:
+        repo.delete_remote(upstream)
 
     passed_files = []
     failed_files = []
