@@ -5,7 +5,9 @@ Python tool for synchronization between source and target repositories.
 import json
 import os
 import shutil
+import stat
 import sys
+import tempfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -31,6 +33,8 @@ class SyncArgumentParser(QualityControlArgumentsParser):  # type: ignore
 
     repo_name: str
     pr_number: str
+    work_dir: Optional[Path] = None
+    dry_run: bool = False
 
 
 class PRData(BaseModel):
@@ -53,8 +57,6 @@ class CommitConfig:
     branch_name: str
     repo_name: str
     pr_number: str
-    json_changed: bool
-    files_to_sync_found: bool
 
 
 @dataclass(slots=True)
@@ -70,14 +72,18 @@ class SyncConfig:
 
 
 @dataclass(slots=True)
-class SyncResult:
+class SyncInputs:
     """
-    Result of synchronization operation
+    Storage for parameters of the synchronization run
     """
 
-    has_changes: bool
-    files_to_sync_found: bool
-    json_changed: bool
+    repo_name: str
+    pr_number: str
+    target_repo: str
+    branch_name: str
+    gh_token: str
+    work_dir: Path
+    dry_run: bool
 
 
 @handles_console_error(ok_codes=(0, 1))
@@ -132,21 +138,36 @@ def get_pr_data(repo_name: str, pr_number: str) -> PRData | None:
         return None
 
 
-def clone_repo(target_repo: str, gh_token: str) -> git.Repo:
+def remove_dir(path: Path) -> None:
+    """
+    Remove directory tree including read-only files.
+
+    Git marks object files as read-only, which prevents their removal on Windows.
+
+    Args:
+        path (Path): Directory to remove.
+    """
+    for file_path in path.rglob("*"):
+        if file_path.is_file():
+            file_path.chmod(stat.S_IWRITE)
+    shutil.rmtree(path)
+
+
+def clone_repo(target_repo: str, gh_token: str, work_dir: Path) -> git.Repo:
     """
     Clone target repo, removing any existing local copy first.
 
     Args:
         target_repo (str): Repository name.
         gh_token (str): GitHub token used for authenticated HTTPS clone.
+        work_dir (Path): Directory to clone target repo into.
 
     Returns:
         git.Repo: Cloned repository object.
     """
-    target_path = Path(target_repo)
+    target_path = work_dir / target_repo
     if target_path.exists():
-
-        shutil.rmtree(target_path)
+        remove_dir(target_path)
 
     url = f"https://{gh_token}@github.com/fipl-hse/{target_repo}.git"
     logger.info("Cloning %s …", url.replace(gh_token, "***"))
@@ -213,29 +234,32 @@ def add_remote_and_fetch(repo: git.Repo, remote_name: str, repo_url: str) -> git
     return remote
 
 
-def _get_blob_sha(repo: git.Repo, ref_str: str, file_path: Path) -> str | None:
+def _get_blob_sha(repo: git.Repo, ref_str: str, file_path: Path | str) -> str | None:
     """
     Return the git object SHA for file_path at ref_str, or None if absent.
 
     Args:
         repo (git.Repo): Repository object.
         ref_str (str): A ref name resolvable by the repo.
-        file_path (Path): Relative path inside the tree.
+        file_path (Path | str): Relative path inside the tree.
 
     Returns:
         str | None: Object SHA string, or None when the path doesn't exist.
     """
     try:
         commit = repo.commit(ref_str)
-        blob = commit.tree[str(file_path)]
+        blob = commit.tree[Path(file_path).as_posix()]
         return blob.hexsha
     except (KeyError, git.BadName, git.BadObject):
         return None
 
 
-def _read_blob(repo: git.Repo, ref_str: str, file_path: Path | str) -> Any:
+def _read_blob(repo: git.Repo, ref_str: str, file_path: Path | str) -> bytes | None:
     """
-    Return decoded text content of file_path at ref_str, or None.
+    Return raw content of file_path at ref_str, or None.
+
+    Raw bytes are used so that binary files are supported and line endings
+    are preserved regardless of the platform the script runs on.
 
     Args:
         repo (git.Repo): Repository object.
@@ -243,52 +267,40 @@ def _read_blob(repo: git.Repo, ref_str: str, file_path: Path | str) -> Any:
         file_path (Path | str): Relative path inside the tree.
 
     Returns:
-        Any: File contents as text, or None when absent.
+        bytes | None: File contents, or None when absent.
     """
     try:
         commit = repo.commit(ref_str)
-        blob = commit.tree[str(file_path)]
-        return blob.data_stream.read().decode("utf-8")
+        blob = commit.tree[Path(file_path).as_posix()]
+        data: bytes = blob.data_stream.read()
+        return data
     except (KeyError, git.BadName, git.BadObject):
         return None
 
 
-def get_json_from_source(repo: git.Repo, source_ref: str) -> tuple[Any | None, bool]:
+def get_config_from_source(repo: git.Repo, source_ref: str) -> ProjectConfig | None:
     """
-    Compare sync-config JSON between source ref and target main; update on disk
-    if it changed.
+    Load project config of the source repo at source_ref.
+
+    The config is read directly from the source ref and is not copied
+    into the target repository.
 
     Args:
-        repo (git.Repo): Target repository object.
+        repo (git.Repo): Target repository object with source remote fetched.
         source_ref (str): Ref in source repo.
 
     Returns:
-        tuple[Any | None, bool]: (ProjectConfig | None, json_changed).
+        ProjectConfig | None: Source project config, or None when absent.
     """
-    repo_root = Path(repo.working_dir)
-    json_path = repo_root / SYNC_CONFIG_PATH
+    content = _read_blob(repo, source_ref, SYNC_CONFIG_PATH)
+    if content is None:
+        logger.error("File %s not found in %s", SYNC_CONFIG_PATH, source_ref)
+        return None
 
-    source_sha = _get_blob_sha(repo, source_ref, SYNC_CONFIG_PATH)
-    target_sha = _get_blob_sha(repo, "origin/main", SYNC_CONFIG_PATH)
-
-    json_changed = source_sha != target_sha
-
-    if json_changed:
-        if source_sha is not None:
-            content = _read_blob(repo, source_ref, SYNC_CONFIG_PATH)
-            if content is None:
-                logger.error("Failed to read JSON from source")
-                return None, json_changed
-            json_path.parent.mkdir(parents=True, exist_ok=True)
-            json_path.write_text(content, encoding="utf-8")
-            repo.index.add([SYNC_CONFIG_PATH])
-        else:
-            if json_path.exists():
-                repo.index.remove([SYNC_CONFIG_PATH], working_tree=True)
-            return None, json_changed
-
-    config = ProjectConfig(json_path)
-    return config, json_changed
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        json_path = Path(tmp_dir) / SYNC_CONFIG_PATH
+        json_path.write_bytes(content)
+        return ProjectConfig(json_path)
 
 
 def sync_files_from_source(
@@ -317,7 +329,7 @@ def sync_files_from_source(
 
         if content is not None:
             full_target.parent.mkdir(parents=True, exist_ok=True)
-            full_target.write_text(content, encoding="utf-8")
+            full_target.write_bytes(content)
             repo.index.add([target_path])
             has_changes = True
         else:
@@ -333,50 +345,31 @@ def sync_files_from_source(
     return has_changes
 
 
-def run_sync(
-    repo: git.Repo,
-    source_ref: str,
-    config: Any | None,
-    json_changed: bool,
-) -> SyncResult | None:
+def run_sync(repo: git.Repo, source_ref: str, config: ProjectConfig) -> bool:
     """
     Compute which files need syncing and apply changes.
 
     Args:
         repo (git.Repo): Target repository object.
         source_ref (str): Ref in source repo.
-        config (Any | None): ProjectConfig object.
-        json_changed (bool): Whether the JSON config file itself changed.
+        config (ProjectConfig): Source project config with sync mapping.
 
     Returns:
-        SyncResult | None: Result of sync operation, or None when config absent.
+        bool: True if any file was written or removed.
     """
-    if not config:
-        return None
-
-    has_changes = json_changed
-    files_to_sync_found = False
-
-    sync_pairs = config.get_doc_sync_config()
     files_to_sync: list[tuple[str, str]] = []
 
-    for pair in sync_pairs:
+    for pair in config.get_doc_sync_config():
         source_sha = _get_blob_sha(repo, source_ref, pair.source)
         target_sha = _get_blob_sha(repo, "origin/main", pair.target)
 
         if source_sha != target_sha:
             files_to_sync.append((pair.source, pair.target))
-            files_to_sync_found = True
 
-    if files_to_sync:
-        synced = sync_files_from_source(repo, source_ref, files_to_sync)
-        has_changes = has_changes or synced
+    if not files_to_sync:
+        return False
 
-    return SyncResult(
-        has_changes=has_changes,
-        files_to_sync_found=files_to_sync_found,
-        json_changed=json_changed,
-    )
+    return sync_files_from_source(repo, source_ref, files_to_sync)
 
 
 def commit_and_push_changes(repo: git.Repo, commit_config: CommitConfig) -> None:
@@ -387,12 +380,7 @@ def commit_and_push_changes(repo: git.Repo, commit_config: CommitConfig) -> None
         repo (git.Repo): Target repository object.
         commit_config (CommitConfig): Commit metadata.
     """
-    if commit_config.json_changed and not commit_config.files_to_sync_found:
-        commit_msg = (
-            f"Update sync mapping from {commit_config.repo_name} " f"PR {commit_config.pr_number}"
-        )
-    else:
-        commit_msg = f"Sync changes from {commit_config.repo_name} PR {commit_config.pr_number}"
+    commit_msg = f"Sync changes from {commit_config.repo_name} PR {commit_config.pr_number}"
 
     repo.index.commit(commit_msg)
     repo.remotes["origin"].push(commit_config.branch_name)
@@ -483,20 +471,18 @@ def create_or_update_pr(
             logger.warning("Failed to update PR %s", target_pr_number)
 
 
-def validate_and_process_inputs() -> tuple[str, ...]:
+def validate_and_process_inputs() -> SyncInputs:
     """
     Validate input args and derive basic parameters for the script.
 
     Returns:
-        tuple[str, ...]: (repo_name, pr_number, target_repo, branch_name, gh_token)
+        SyncInputs: Parameters of the synchronization run.
     """
     parser = SyncArgumentParser(underscores_to_dashes=True)
     args = parser.parse_args()
 
     repo_name = args.repo_name
     pr_number = args.pr_number
-    target_repo = "fipl-hse.github.io"
-    branch_name = f"auto-update-from-{repo_name}-pr-{pr_number}"
     root_dir = args.root_dir.resolve()
     toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
     fileConfig(toml_config)
@@ -506,10 +492,27 @@ def validate_and_process_inputs() -> tuple[str, ...]:
         logger.error("GH_TOKEN environment variable is not set")
         sys.exit(1)
 
-    return repo_name, pr_number, target_repo, branch_name, gh_token
+    if args.work_dir:
+        work_dir = args.work_dir.resolve()
+        work_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        work_dir = Path(tempfile.mkdtemp(prefix="docs_sync_"))
+    logger.info("Working directory: %s", work_dir)
+
+    return SyncInputs(
+        repo_name=repo_name,
+        pr_number=pr_number,
+        target_repo="fipl-hse.github.io",
+        branch_name=f"auto-update-from-{repo_name}-pr-{pr_number}",
+        gh_token=gh_token,
+        work_dir=work_dir,
+        dry_run=args.dry_run,
+    )
 
 
-def prepare_target_repo(target_repo: str, branch_name: str, gh_token: str) -> git.Repo:
+def prepare_target_repo(
+    target_repo: str, branch_name: str, gh_token: str, work_dir: Path
+) -> git.Repo:
     """
     Clone target repo, configure git identity, and checkout the working branch.
 
@@ -517,25 +520,48 @@ def prepare_target_repo(target_repo: str, branch_name: str, gh_token: str) -> gi
         target_repo (str): Name of target repo.
         branch_name (str): Branch to work on.
         gh_token (str): GitHub token.
+        work_dir (Path): Directory to clone target repo into.
 
     Returns:
         git.Repo: Fully prepared repository object.
     """
-    repo = clone_repo(target_repo, gh_token)
+    repo = clone_repo(target_repo, gh_token, work_dir)
     setup_git_config(repo)
     checkout_or_create_branch(repo, branch_name)
     return repo
+
+
+def get_staged_files(repo: git.Repo) -> list[str]:
+    """
+    Collect paths that are staged and differ from HEAD.
+
+    Args:
+        repo (git.Repo): Target repository object.
+
+    Returns:
+        list[str]: Sorted paths of staged changes.
+    """
+    paths = {diff.b_path or diff.a_path for diff in repo.index.diff("HEAD")}
+    return sorted(path for path in paths if path)
 
 
 def main() -> None:
     """
     Entry point: sync files from source PR into the target repository
     """
-    repo_name, pr_number, target_repo, branch_name, gh_token = validate_and_process_inputs()
+    inputs = validate_and_process_inputs()
 
-    repo = prepare_target_repo(target_repo, branch_name, gh_token)
+    repo = prepare_target_repo(
+        inputs.target_repo, inputs.branch_name, inputs.gh_token, inputs.work_dir
+    )
 
-    pr_data = get_pr_data(repo_name, pr_number)
+    add_remote_and_fetch(
+        repo,
+        "parent-repo",
+        f"https://{inputs.gh_token}@github.com/{inputs.repo_name}.git",
+    )
+
+    pr_data = get_pr_data(inputs.repo_name, inputs.pr_number)
     if not pr_data:
         logger.error("PR data in source repo not found")
         sys.exit(0)
@@ -556,24 +582,37 @@ def main() -> None:
 
     repo.remotes["origin"].fetch("main")
 
-    config, json_changed = get_json_from_source(repo, source_ref)
+    config = get_config_from_source(repo, source_ref)
+    if config is None:
+        sys.exit(0)
 
-    sync_result = run_sync(repo, source_ref, config, json_changed)
-
-    if sync_result is None or not sync_result.has_changes:
+    if not run_sync(repo, source_ref, config):
         logger.info("No changes to commit")
+        sys.exit(0)
+
+    staged_files = get_staged_files(repo)
+    if not staged_files:
+        logger.info(
+            "Branch %s already contains all changes — nothing to commit", inputs.branch_name
+        )
+        sys.exit(0)
+
+    logger.info("Files to be committed:\n%s", "\n".join(staged_files))
+
+    if inputs.dry_run:
+        logger.info("Dry run — skipping commit, push and PR. Clone is kept at %s", repo.working_dir)
         sys.exit(0)
 
     commit_config = CommitConfig(
         repo_path=str(repo.working_dir),
-        branch_name=branch_name,
-        repo_name=repo_name,
-        pr_number=pr_number,
-        json_changed=sync_result.json_changed,
-        files_to_sync_found=sync_result.files_to_sync_found,
+        branch_name=inputs.branch_name,
+        repo_name=inputs.repo_name,
+        pr_number=inputs.pr_number,
     )
     commit_and_push_changes(repo, commit_config)
-    create_or_update_pr(repo, target_repo, branch_name, repo_name, pr_number)
+    create_or_update_pr(
+        repo, inputs.target_repo, inputs.branch_name, inputs.repo_name, inputs.pr_number
+    )
 
 
 if __name__ == "__main__":
