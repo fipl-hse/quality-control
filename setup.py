@@ -17,6 +17,7 @@ setup(
     include_package_data=True,
     package_data={
         "quality_control": ["*.txt", "*.json", "*.yaml", "py.typed"],
+        "quality_control.doc_sync": ["*.sh"],
     },
     install_requires=collect_requirements(),
     python_requires=">=3.10",
@@ -45,7 +46,8 @@ setup(
             "fiplconfig.run_tests=quality_control.run_tests:main",
             "fiplconfig.run_start=quality_control.run_start:main",
             "fiplconfig.update_forks=quality_control.github.update_forks:main",
-            "fiplconfig.sync_docs=quality_control.docs_sync.create_external_pr:main",
+            "fiplconfig.sync_docs=quality_control.doc_sync.create_external_pr:main",
+            "fiplconfig.setup_gh_cli=quality_control.doc_sync.setup_cli:main",
         ]
     },
     long_description=(Path(__file__).parent / "README.md").read_text(encoding="utf-8"),
