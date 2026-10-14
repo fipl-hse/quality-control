@@ -17,6 +17,20 @@
             "args":[
                 "--root-dir", "../2026-2-level-labs-admin",
             ],
+        },
+        {
+            "name": "Run fork update",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "quality_control/github/update_forks.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args":[
+                "--config", "quality_control/github/update_fork_config.json",
+            ],
         }
     ]
 }

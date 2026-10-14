@@ -1,0 +1,34 @@
+{
+    "winners": {
+        "forks": [
+            "https://github.com/Yulia777777777/2026-2-level-labs"
+       ],
+        "pathsToKeep":{
+            "fork": [
+            ],
+            "upstream": [
+                "lab_1_classify_profile/main.py",
+                "lab_1_classify_profile/start.py",
+                "lab_1_classify_profile/settings.json"
+            ]
+        }
+    },
+    "losers": {
+        "forks": [
+        ],
+        "pathsToKeep":{
+            "fork": [
+                "lab_1_classify_profile/main.py",
+                "lab_1_classify_profile/start.py",
+                "lab_1_classify_profile/settings.json"
+            ],
+            "upstream": [
+            ]
+        }
+    },
+    "authentication": {
+        "user": "EIzharikov",
+        "token": "token"
+    },
+    "upstream": "https://github.com/fipl-hse/2026-2-level-labs"
+}
