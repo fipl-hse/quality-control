@@ -13,7 +13,7 @@ concurrency:
 jobs:
   install-dependencies:
     name: Installing dependencies
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
@@ -26,7 +26,7 @@ jobs:
 
   code-style:
     name: Code Style
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: [ install-dependencies ]
 
@@ -42,7 +42,7 @@ jobs:
 
   flake8-checks:
     name: Import style checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: [ install-dependencies ]
 
@@ -58,7 +58,7 @@ jobs:
 
   ruff-check:
     name: Ruff check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: [ install-dependencies ]
 
@@ -74,7 +74,7 @@ jobs:
 
   mypy-checks:
     name: Static types checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: [ install-dependencies ]
 
