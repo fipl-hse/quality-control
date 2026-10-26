@@ -4,7 +4,10 @@ Check and validate that the generated lab stubs remain unchanged.
 
 # pylint: disable=too-many-locals
 import sys
+import tempfile
+from pathlib import Path
 
+import git
 from logging518.config import fileConfig
 
 from quality_control.console_logging import get_child_logger
@@ -14,61 +17,80 @@ from quality_control.quality_control_parser import QualityControlArgumentsParser
 
 logger = get_child_logger(__file__)
 
+UPSTREAM_NAME = "temp-upstream"
 
 def main() -> None:
     """
     Check the stubs correctness
     """
+
     args = QualityControlArgumentsParser(underscores_to_dashes=True).parse_args()
-
     root_dir = args.root_dir.resolve()
-    toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
-
     project_config = ProjectConfig(
         (args.project_config_path or (root_dir / "project_config.json")).resolve()
     )
+    api_check_config = project_config.get_api_check_config()
+    toml_config = (args.toml_config_path or (root_dir / "pyproject.toml")).resolve()
 
     fileConfig(toml_config)
+
+    repo = git.Repo(root_dir)
+    upstream = repo.create_remote(UPSTREAM_NAME, api_check_config.upstream_url)
+    try:
+        upstream.fetch(api_check_config.upstream_branch)
+        commit = upstream.refs[api_check_config.upstream_branch].commit
+    finally:
+        repo.delete_remote(upstream)
 
     passed_files = []
     failed_files = []
 
-    for lab_path in project_config.get_labs_paths(root_dir=root_dir):
-        lab_name = lab_path.name
-        lab_config = project_config.get_lab(lab_name)
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        for lab_path in project_config.get_labs_paths(root_dir=root_dir):
+            lab_name = lab_path.name
+            lab_config = project_config.get_lab(lab_name)
 
-        for impl_file in lab_config.stubs:
-            file_is_correct = True
-            impl_path = lab_path / impl_file
+            for impl_file in lab_config.stubs:
+                file_is_correct = True
+                impl_path = lab_path / impl_file
+                relative_path = impl_path.relative_to(root_dir)
 
-            if not impl_path.exists():
-                logger.error(f"Missing implementation file: {impl_path.relative_to(root_dir)}")
-                file_is_correct = False
+                if not impl_path.exists():
+                    logger.error(f"Missing implementation file: {relative_path}")
+                    file_is_correct = False
+                    failed_files.append(str(relative_path))
+                    continue
 
-            reference_path = lab_path / f"{impl_path.stem}_stub.py"
+                try:
+                    blob = commit.tree / relative_path.as_posix()
+                except KeyError:
+                    logger.error(
+                        f"Missing reference in upstream commit file: {relative_path}"
+                    )
+                    file_is_correct = False
+                    failed_files.append(str(relative_path))
+                    continue
 
-            if not reference_path.exists():
-                logger.error(f"Missing reference file: {reference_path.relative_to(root_dir)}")
-                file_is_correct = False
+                tmp_path = Path(tmpdirname) / relative_path
+                tmp_path.parent.mkdir(parents=True, exist_ok=True)
+                tmp_path.write_text(blob.data_stream.read().decode("utf-8"), encoding="utf-8")
+                expected_code = cleanup_code(tmp_path, project_config)
+                current_code = cleanup_code(impl_path, project_config)
 
-            expected_code = cleanup_code(reference_path, project_config)
-            current_code = cleanup_code(impl_path, project_config)
+                if expected_code != current_code:
+                    logger.error(
+                        f"Mismatch in {relative_path} stub"
+                    )
+                    file_is_correct = False
 
-            if expected_code != current_code:
-                logger.error(
-                    "Mismatch between "
-                    f"{impl_path.relative_to(root_dir)} and "
-                    f"{reference_path.relative_to(root_dir)}"
-                )
-                file_is_correct = False
-
-            if file_is_correct:
-                passed_files.append(impl_file)
-            else:
-                failed_files.append(impl_file)
+                if file_is_correct:
+                    passed_files.append(str(relative_path))
+                else:
+                    failed_files.append(str(relative_path))
 
     if failed_files:
         logger.error(f"Failed files: {failed_files}")
+        logger.info(f"Passed files: {passed_files}")
         sys.exit(1)
 
     logger.info("All stubs are relevant")
