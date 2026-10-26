@@ -45,46 +45,48 @@ def main() -> None:
     passed_files = []
     failed_files = []
 
-    for lab_path in project_config.get_labs_paths(root_dir=root_dir):
-        lab_name = lab_path.name
-        lab_config = project_config.get_lab(lab_name)
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        for lab_path in project_config.get_labs_paths(root_dir=root_dir):
+            lab_name = lab_path.name
+            lab_config = project_config.get_lab(lab_name)
 
-        for impl_file in lab_config.stubs:
-            file_is_correct = True
-            impl_path = lab_path / impl_file
+            for impl_file in lab_config.stubs:
+                file_is_correct = True
+                impl_path = lab_path / impl_file
+                relative_path = impl_path.relative_to(root_dir)
 
-            if not impl_path.exists():
-                logger.error(f"Missing implementation file: {impl_path.relative_to(root_dir)}")
-                file_is_correct = False
-                failed_files.append(impl_file)
-                continue
+                if not impl_path.exists():
+                    logger.error(f"Missing implementation file: {relative_path}")
+                    file_is_correct = False
+                    failed_files.append(str(relative_path))
+                    continue
 
-            try:
-                blob = commit.tree / impl_path.relative_to(root_dir)
-            except KeyError:
-                logger.error(
-                    f"Missing referenece in upstream commit file: {impl_path.relative_to(root_dir)}"
-                )
-                file_is_correct = False
-                failed_files.append(impl_file)
-                continue
+                try:
+                    blob = commit.tree / relative_path.as_posix()
+                except KeyError:
+                    logger.error(
+                        f"Missing reference in upstream commit file: {relative_path}"
+                    )
+                    file_is_correct = False
+                    failed_files.append(str(relative_path))
+                    continue
 
-            with tempfile.TemporaryDirectory() as tmpdirname:
-                tmp_path = Path(tmpdirname) / impl_file
-                tmp_path.write_text(blob.data_stream.read().decode("utf-8"))
+                tmp_path = Path(tmpdirname) / relative_path
+                tmp_path.parent.mkdir(parents=True, exist_ok=True)
+                tmp_path.write_text(blob.data_stream.read().decode("utf-8"), encoding="utf-8")
                 expected_code = cleanup_code(tmp_path, project_config)
-            current_code = cleanup_code(impl_path, project_config)
+                current_code = cleanup_code(impl_path, project_config)
 
-            if expected_code != current_code:
-                logger.error(
-                    f"Mismatch in {impl_path.relative_to(root_dir)} stub"
-                )
-                file_is_correct = False
+                if expected_code != current_code:
+                    logger.error(
+                        f"Mismatch in {relative_path} stub"
+                    )
+                    file_is_correct = False
 
-            if file_is_correct:
-                passed_files.append(impl_file)
-            else:
-                failed_files.append(impl_file)
+                if file_is_correct:
+                    passed_files.append(str(relative_path))
+                else:
+                    failed_files.append(str(relative_path))
 
     if failed_files:
         logger.error(f"Failed files: {failed_files}")
