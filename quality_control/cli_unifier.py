@@ -220,6 +220,7 @@ def handles_console_error(
     return decorator
 
 
+@functools.lru_cache(maxsize=1)
 def _ensure_venv_setup_exists() -> None:
     """
     Check if venv_setup exists in the current repository root.
@@ -243,4 +244,4 @@ def _ensure_venv_setup_exists() -> None:
             )
 
 
-_ensure_venv_setup_exists()
+_ensure_venv_setup_exists() #i'm not sure where to place it
