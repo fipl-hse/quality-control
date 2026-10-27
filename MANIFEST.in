@@ -1,2 +1,1 @@
-recursive-include quality_control *.txt *.json *.yaml *.typed
-include quality_control/venv_setup.sh
+recursive-include quality_control *.txt *.json *.yaml *.typed *.sh
