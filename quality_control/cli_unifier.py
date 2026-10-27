@@ -4,8 +4,10 @@ CLI commands.
 
 # pylint: disable=subprocess-run-check
 import functools
+import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -216,3 +218,30 @@ def handles_console_error(
         return wrapper
 
     return decorator
+
+
+@functools.lru_cache(maxsize=1)
+def _ensure_venv_setup_exists() -> None:
+    """
+    Check if venv_setup exists in the current repository root.
+
+    If it is missing, copy the default script from the quality_control package.
+    """
+    target_local_script = Path("venv_setup")
+
+    if not target_local_script.exists():
+        package_dir = Path(__file__).parent
+        default_script_source = package_dir / "venv_setup.sh"
+
+        if default_script_source.exists():
+            shutil.copy(default_script_source, target_local_script)
+            try:
+                os.chmod(target_local_script, 0o755)
+            except AttributeError:
+                pass
+            logger.info(
+                "INFO: Local venv_setup not found. Default script from quality-control applied."
+            )
+
+
+_ensure_venv_setup_exists() #i'm not sure where to place it
